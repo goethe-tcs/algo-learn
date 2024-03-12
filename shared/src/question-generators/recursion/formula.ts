@@ -1,4 +1,3 @@
-import { validateParameters } from "../../api/Parameters"
 import {
   FreeTextFeedbackFunction,
   FreeTextFormatFunction,
@@ -58,14 +57,6 @@ export const RecursionFormula: QuestionGenerator = {
     })
     const random = new Random(seed)
     const { t } = tFunction(translations, lang)
-
-    if (!validateParameters(parameters, RecursionFormula.expectedParameters)) {
-      throw new Error(
-        `Unknown variant ${parameters.variant.toString()}. Valid variants are: ${RecursionFormula.expectedParameters.join(
-          ", ",
-        )}`,
-      )
-    }
 
     const variant = parameters.variant as "choice" | "input"
     const { functionText, functionName, n, b, a, d, c } = sampleRecursiveFunction(random)

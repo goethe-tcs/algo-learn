@@ -108,19 +108,22 @@ export type MultipleChoiceFeedbackFunction = (
  * @param correctAnswerIndex The index or indices of the correct answer(s)
  * @param sorting Whether the order of the answers is relevant; defaults to
  *   false, in which case the order of the answers is ignored by sorting them
+ * @param feedbackText An optional feedback text
  * @returns
  */
 export function minimalMultipleChoiceFeedback({
   correctAnswerIndex,
   sorting = false,
+  feedbackText = undefined,
 }: {
   correctAnswerIndex: number | number[]
   sorting?: boolean
+  feedbackText?: string
 }): MultipleChoiceFeedbackFunction {
   const correctChoice =
     typeof correctAnswerIndex === "number" ? [correctAnswerIndex] : correctAnswerIndex.slice()
   if (!sorting) correctChoice.sort()
-  const feedback: MultipleChoiceFeedbackFunction = ({ choice }) => {
+  return ({ choice }) => {
     const sameLength = choice.length === correctChoice.length
     if (!sorting) choice = choice.slice().sort()
     let sameAnswer = true
@@ -128,9 +131,8 @@ export function minimalMultipleChoiceFeedback({
       if (c !== correctChoice[i]) sameAnswer = false
     })
     const correct = sameLength && sameAnswer
-    return { correct, correctChoice }
+    return { correct, correctChoice, feedbackText }
   }
-  return feedback
 }
 
 /**
@@ -161,6 +163,11 @@ export interface FreeTextQuestion extends QuestionBase {
    * the given answer is correct and to provide feedback on the syntax.
    */
   checkFormat?: FreeTextFormatFunction
+
+  /**
+   * If provided, the data can be used to provide buttons to add specific text to the input field.
+   */
+  typingAid?: { text: string; input: string }[]
 }
 
 /**

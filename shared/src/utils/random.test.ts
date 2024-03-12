@@ -1,4 +1,4 @@
-import { expect, test } from "vitest"
+import { describe, expect, test } from "vitest"
 import Random, { sfc32, xmur3 } from "./random"
 
 test("Check that xmur3 and sfc32 return a known sequence.", () => {
@@ -84,4 +84,57 @@ test("Check that random.subset returns a subset of the correct size.", () => {
     const S = new Set(test)
     expect(S.size).toBe(i)
   }
+})
+
+describe("random.split", () => {
+  const random = new Random("some fixed seed")
+  test("correct num of splits", () => {
+    expect(random.split(100, 5).length).toEqual(5)
+  })
+
+  test("correct sum", () => {
+    expect(random.split(100, 5).reduce((sum, val) => sum + val, 0)).toEqual(100)
+  })
+
+  test("values in [min, max]", () => {
+    random.split(100, 5).forEach((value) => {
+      expect(value).toBeGreaterThanOrEqual(0)
+      expect(value).toBeLessThanOrEqual(100)
+    })
+
+    random.split(100, 5, 15, 25).forEach((value) => {
+      expect(value).toBeGreaterThanOrEqual(15)
+      expect(value).toBeLessThanOrEqual(25)
+    })
+
+    random.split(100, 5, 20).forEach((value) => {
+      expect(value).toEqual(20)
+    })
+
+    random.split(100, 5, 0, 20).forEach((value) => {
+      expect(value).toEqual(20)
+    })
+
+    random.split(100, 5, 20, 20).forEach((value) => {
+      expect(value).toEqual(20)
+    })
+  })
+})
+
+describe("random.splitArray", () => {
+  const random = new Random("some fixed seed")
+  const array = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  const [leftArr, rightArr] = random.splitArray(array)
+  test("No elements are lost", () => {
+    array.forEach((el) => {
+      expect(leftArr.includes(el) || rightArr.includes(el)).toBeTruthy()
+    })
+
+    expect(leftArr.length + rightArr.length).toEqual(array.length)
+  })
+
+  test("Both arrays are non-empty", () => {
+    expect(leftArr.length).toBeGreaterThan(0)
+    expect(rightArr.length).toBeGreaterThan(0)
+  })
 })

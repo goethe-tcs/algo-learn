@@ -1,4 +1,3 @@
-import { StringParameter, validateParameters } from "../../api/Parameters"
 import {
   minimalMultipleChoiceFeedback,
   MultipleChoiceQuestion,
@@ -49,13 +48,6 @@ export const SimplifySum: QuestionGenerator = {
     const random = new Random(seed)
     const { t } = tFunction(translations, lang)
 
-    if (!validateParameters(parameters, SimplifySum.expectedParameters)) {
-      throw new Error(
-        `Unknown variant ${parameters.variant.toString()}. Valid variants are: ${(
-          SimplifySum.expectedParameters[0] as StringParameter
-        ).allowedValues.join(", ")}`,
-      )
-    }
     const variant = parameters.variant as TermSetVariants
 
     const functionName = random.choice("fghFGHT".split(""))

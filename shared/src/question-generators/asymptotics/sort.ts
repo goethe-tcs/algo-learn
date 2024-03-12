@@ -1,4 +1,3 @@
-import { validateParameters } from "../../api/Parameters"
 import {
   minimalMultipleChoiceFeedback,
   MultipleChoiceQuestion,
@@ -52,14 +51,6 @@ export const SortTerms: QuestionGenerator = {
   ],
   generate: (generatorPath, lang, parameters, seed) => {
     const { t } = tFunction(translations, lang)
-
-    if (!validateParameters(parameters, SortTerms.expectedParameters)) {
-      throw new Error(
-        `Unknown variant ${parameters.variant.toString()}. Valid variants are: ${SortTerms.expectedParameters.join(
-          ", ",
-        )}`,
-      )
-    }
 
     const random = new Random(seed)
     const variable = random.choice("nmNMxyztk".split(""))

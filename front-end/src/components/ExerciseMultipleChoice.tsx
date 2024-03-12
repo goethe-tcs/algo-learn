@@ -130,19 +130,22 @@ export function ExerciseMultipleChoice({
   })
 
   if (!question.sorting) {
-    let message = null
+    const message = []
     if (mode === "correct") {
-      message = <b className="text-2xl">Correct!</b>
+      message.push(<b className="text-2xl">Correct!</b>)
     } else if (mode === "incorrect") {
-      message = feedbackObject?.correctChoice ? (
-        <>
-          <b className="text-xl">{t("correct.solution")}:</b>
-          <br />
-          {t("see.above")}
-        </>
-      ) : (
-        t("incorrect")
+      message.push(
+        feedbackObject?.correctChoice ? (
+          <>
+            <b className="text-xl">{t("correct.solution")}:</b>
+            <br />
+            {t("see.above")}
+          </>
+        ) : (
+          t("incorrect")
+        ),
       )
+      if (feedbackObject?.feedbackText) message.push(<Markdown md={feedbackObject.feedbackText} />)
     }
     const disabled = mode === "correct" || mode === "incorrect"
     return (

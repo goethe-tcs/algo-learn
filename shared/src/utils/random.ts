@@ -37,6 +37,14 @@ export default class Random {
   }
 
   /**
+   * Returns a random boolean
+   * @param chanceToBeTrue - The chance that the result is true
+   */
+  bool(chanceToBeTrue: number = 0.5): boolean {
+    return this.uniform() < chanceToBeTrue
+  }
+
+  /**
    * Returns a random integer.
    *
    * @param min - The minimum number.
@@ -44,7 +52,48 @@ export default class Random {
    * @returns A random integer between min (inclusive) and max (inclusive).
    */
   int(min: number, max: number): number {
+    if (min > max) throw new Error("Value Error: min > max")
+    if (min === max) return min
     return Math.floor(this.float(min, max + 1))
+  }
+
+  /**
+   * Splits an input number into an array of random numbers that sum up to the input number
+   * @param input the number to split
+   * @param numSplits how often the number is split
+   * @param min the minimal value a random split must have
+   * @param max the maximal value a random split must have
+   */
+  split(
+    input: number,
+    numSplits: number,
+    min: number = 0,
+    max: number | undefined = undefined,
+  ): number[] {
+    if (max === undefined) max = input
+    if (numSplits < 1) throw new Error("Value Error: numSplits needs to be positive")
+    if (numSplits * min > input)
+      throw new Error(
+        "Value Error: input cannot be split into numSplits values that are at least min big",
+      )
+    if (numSplits * max < input)
+      throw new Error(
+        "Value Error: input cannot be split into numSplits values that are at most max big",
+      )
+
+    let leftToSplit = input
+    const result = []
+    for (let i = 0; i < numSplits - 1; i++) {
+      const nextInt = this.int(
+        Math.max(min, leftToSplit - (numSplits - i - 1) * max),
+        Math.min(max, leftToSplit - (numSplits - i - 1) * min),
+      )
+      leftToSplit -= nextInt
+      result.push(nextInt)
+    }
+
+    result.push(leftToSplit)
+    return this.shuffle(result)
   }
 
   /**
@@ -53,7 +102,7 @@ export default class Random {
    * @param array - An array of elements.
    * @returns A random element from the array.
    */
-  choice<T>(array: Array<T>): T {
+  choice<T>(array: ReadonlyArray<T>): T {
     return array[this.int(0, array.length - 1)]
   }
 
@@ -64,13 +113,31 @@ export default class Random {
    * @param size - The size of the subset.
    * @returns A list of size distinct elements from the array.
    */
-  subset<T>(array: Array<T>, size: number): Array<T> {
+  subset<T>(array: ReadonlyArray<T>, size: number): Array<T> {
     if (size > array.length) {
       throw new Error("Subset size cannot be larger than the array size")
     }
     const copy = array.slice()
     this.shuffle(copy)
     return copy.slice(0, size)
+  }
+
+  /**
+   * Splits an array into two random disjoint subsets of arrays such that their union is the full array
+   * @param array
+   * @param size Size of the first array. If not provided a random number is chosen.
+   */
+  splitArray<T>(array: ReadonlyArray<T>, size?: number): Array<T>[] {
+    if (size === undefined) size = this.int(1, array.length - 1)
+
+    if (size > array.length) {
+      throw new Error("Subset size cannot be larger than the array size")
+    }
+
+    const copy = array.slice()
+    this.shuffle(copy)
+
+    return [copy.slice(0, size), copy.slice(size, array.length)]
   }
 
   /**
@@ -97,14 +164,31 @@ export default class Random {
 
   /**
    * Chooses a random element from an array of weighted elements.
-   *
-   * @param array - An array of tuples of the form [element, weight]
+   * @param elements
+   * @param weights
    * @returns A random element from the array.
    */
-  weightedChoice<T>(array: Array<[element: T, weight: number]>): T {
-    const elements = array.map((w) => w[0])
-    const weigths = array.map((w) => w[1])
-    return elements[this.weightedIndex(weigths)]
+  weightedChoice<T>(elements: ReadonlyArray<T>, weights: number[]): T
+  /**
+   * Chooses a random element from an array of weighted elements.
+   * @param choicesAndWeights An array of element-weight tuples
+   * @returns A random element from the array.
+   */
+  weightedChoice<T>(choicesAndWeights: ReadonlyArray<[element: T, weight: number]>): T
+  weightedChoice<T>(
+    data: ReadonlyArray<[element: T, weight: number]> | ReadonlyArray<T>,
+    weights: number[] | undefined = undefined,
+  ): T {
+    let elements: readonly T[]
+
+    if (weights === undefined) {
+      elements = (data as ReadonlyArray<[element: T, weight: number]>).map((w) => w[0])
+      weights = (data as ReadonlyArray<[element: T, weight: number]>).map((w) => w[1])
+    } else {
+      elements = data as ReadonlyArray<T>
+    }
+
+    return elements[this.weightedIndex(weights)]
   }
 
   /**

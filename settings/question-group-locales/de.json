@@ -4,5 +4,6 @@
   "skill.level": "Level",
   "skill.math": "Formulierung",
   "skill.recursion": "Rekursion",
-  "skill.time": "Laufzeit"
+  "skill.time": "Laufzeit",
+  "skill.propositional-logic": "Aussagenlogik"
 }

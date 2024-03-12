@@ -8,7 +8,7 @@ import Random from "../../utils/random"
 import { t, tFunctional, Translations } from "../../utils/translations"
 
 /**
- * All text displayed text goes into the translations object.
+ * All displayed text goes into the translations object.
  * Include at least english and german.
  */
 const translations: Translations = {
@@ -25,7 +25,7 @@ const translations: Translations = {
 }
 
 function generateWrongAnswers(random: Random, correctAnswer: number): Array<string> {
-  let wrongAnswers = [
+  const wrongAnswers = [
     `$${correctAnswer + 3}$`,
     `$${correctAnswer + 2}$`,
     `$${correctAnswer + 1}$`,
@@ -53,7 +53,7 @@ export const ExampleQuestion: QuestionGenerator = {
   /**
    * Generates a new MultipleChoiceQuestion question.
    *
-   * @generatorPath The path the generator is located on the page. Defined in settings/questionSelection.ts
+   * @param generatorPath The path the generator is located on the page. Defined in settings/questionSelection.ts
    * @param lang The language of the question
    * @param parameters The parameters for the question. In this case none are used.
    * @param seed The seed for the random number generator
