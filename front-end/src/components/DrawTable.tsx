@@ -1,5 +1,5 @@
-import { ReactElement } from "react"
-import { Markdown } from "@/components/Markdown.tsx"
+import { ReactElement, useEffect, useRef } from "react"
+import { Markdown } from "@/components/Markdown"
 
 /**
  * The List of all the possible extra features for the table
@@ -88,6 +88,7 @@ export function DrawTable({
   let cellVerticalAlign = "align-"
   let cellHorizontalAlign = "text-"
 
+  // create the value for the header
   extraFeatureList.map((feature) => {
     if (feature.startsWith("border_")) {
       borderStyle = feature.split("_")[1]
@@ -105,6 +106,30 @@ export function DrawTable({
   }
 
   const tableHeader = []
+
+  // this effect is used to add the copy event to the table
+  // it prevents copying the value with the default \t and instead with space
+  const tableRef = useRef<HTMLDivElement>(null) // Specify the type of element the ref will hold
+  useEffect(() => {
+    const tableElement = tableRef.current
+    if (!tableElement) return // Check if tableEl is not null
+
+    const handleCopy = (event: ClipboardEvent) => {
+      event.preventDefault()
+      const selection = document.getSelection()
+      if (!selection) return
+
+      const selectedText = selection.toString().replace(/\t/g, " ")
+      event.clipboardData!.setData("text/plain", selectedText)
+    }
+
+    // Type assertion to ensure tableEl is treated as an HTMLElement
+    tableElement.addEventListener("copy", handleCopy)
+    return () => {
+      tableElement.removeEventListener("copy", handleCopy)
+    }
+  }, [])
+
   tableHeader.push(
     <tr key={`row-0`}>
       {parsedHeader.map((md, j) => (
@@ -137,11 +162,14 @@ export function DrawTable({
       tableClass = feature.split("_")[1]
     }
   })
+
   const tableReturnValue = (
-    <table className={tableClass}>
-      <thead>{tableHeader}</thead>
-      <tbody>{tableContent}</tbody>
-    </table>
+    <div ref={tableRef}>
+      <table className={tableClass}>
+        <thead>{tableHeader}</thead>
+        <tbody>{tableContent}</tbody>
+      </table>
+    </div>
   )
 
   let divClass = ""
