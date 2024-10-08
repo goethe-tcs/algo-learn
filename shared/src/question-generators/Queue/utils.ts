@@ -86,7 +86,9 @@ export function generateQueueStartElements({
       const newValue = random.int(1, 20)
       startElements.push(newValue)
     }
-    queueInformationElements += createArrayDisplayCodeBlock({ array: startElements })
+    queueInformationElements += createArrayDisplayCodeBlock({
+      array: startElements,
+    })
   }
 
   return {

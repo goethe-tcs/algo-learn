@@ -12,6 +12,43 @@ export type ArrayDisplayProps<T> = {
   array: T[]
   startingIndex: number
   secondRowName: SingleTranslation
+  inputFieldSize?: number
+}
+
+/**
+ * This function creates an array display code block with user input fields.
+ * @param numberOfInputFields - (more than nine input fields may be too large)
+ * @param startingIndex
+ * @param secondRowName
+ * @param inputFieldSize - the max number of characters necessary to fill the input field
+ * @param leadValues - the lead values are values in the columns in front of the input fields
+ */
+export function createArrayDisplayCodeBlockUserInput({
+  numberOfInputFields,
+  startingIndex = 0,
+  secondRowName = { de: "Wert", en: "Value" },
+  inputFieldCharacters = 2,
+  leadValues = [],
+}: {
+  numberOfInputFields: number
+  startingIndex?: number
+  secondRowName?: SingleTranslation
+  inputFieldCharacters?: number
+  leadValues?: string[]
+}) {
+  // create as many input fields as needed
+  const inputFields: string[] = leadValues
+  for (let i = 0; i < numberOfInputFields; i++) {
+    inputFields.push(`{{input-${i}#OS_${inputFieldCharacters.toString()}###overlay}}`)
+  }
+  return {
+    inputFields,
+    arrayDisplayBlock: createArrayDisplayCodeBlock({
+      array: inputFields,
+      startingIndex,
+      secondRowName,
+    }),
+  }
 }
 
 /**
