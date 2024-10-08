@@ -330,7 +330,7 @@ function pseudocodeForAllToString(
   const { psString, psStringColor, psStringLatex } = pseudoCodeStringToString(forAllState.forAll.set)
   const forAllString: string[] = [
     leadingWhitespace(indent) +
-      `\\textbf{for}\\text{ }${forAllState.forAll.variable} \\in ${psString}\\text{ }\\textbf{then}`,
+      `\\textbf{for}\\text{ }${forAllState.forAll.variable} \\in ${psString}\\text{ }\\textbf{do}`,
   ]
   const forAllStringColor: string[] = [
     leadingWhitespace(indent) +

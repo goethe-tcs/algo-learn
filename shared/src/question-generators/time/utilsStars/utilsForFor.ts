@@ -1,312 +1,185 @@
-import {
-  BoundsOptions,
-  createForLine,
-  createIfCondition,
-  IfOptions,
-} from "@shared/question-generators/time/utils.ts"
-import { calculateNumStars } from "@shared/question-generators/time/utilsStars/utils.ts"
-import {
-  printStarsNew,
-  PseudoCode,
-  PseudoCodeBlock,
-  PseudoCodeFor,
-  PseudoCodeForAll,
-  PseudoCodeVariable,
-} from "@shared/utils/pseudoCodeUtils.ts"
+import { BoundsOptions, IfOptions } from "@shared/question-generators/time/utils.ts"
+import { calculateNumberOfStars } from "@shared/question-generators/time/utilsStars/calculateNumberOfStars.ts"
+import { generateDifferentAmountOfStarPrints } from "@shared/question-generators/time/utilsStars/utils.ts"
+import { createPseudoCodeForForLoop } from "@shared/question-generators/time/utilsStars/utilsForForCode.ts"
 import Random from "@shared/utils/random.ts"
 
 /**
+ * This computes the end value of the first loop based on the manipulation
+ * @param endManipulationFirstLoop
+ * @param endValueFirstLoop
+ */
+function computeEndValueFirstLoop(
+  endManipulationFirstLoop: BoundsOptions,
+  endValueFirstLoop: number,
+): number {
+  if (endManipulationFirstLoop === "none") {
+    return endValueFirstLoop
+  } else if (endManipulationFirstLoop.type === "mult") {
+    return endValueFirstLoop * endManipulationFirstLoop.value
+  } else if (endManipulationFirstLoop.type === "square") {
+    return endValueFirstLoop * endValueFirstLoop
+  } else {
+    return Math.ceil(Math.log2(endValueFirstLoop))
+  }
+}
+
+/**
+ * This computes the start value of the second loop based on the manipulation
+ * @param startManipulationSecondLoop
+ * @param loopIteration
+ * @param startSecondManipulationMultiplier
+ * @param startValueSecondLoop
+ */
+function computeStartValueSecondLoop(
+  startManipulationSecondLoop: "none" | "var-normal" | "var-mult" | "var-square",
+  loopIteration: number,
+  startSecondManipulationMultiplier: number,
+  startValueSecondLoop: number,
+): number {
+  if (startManipulationSecondLoop === "none") {
+    return startValueSecondLoop
+  } else if (startManipulationSecondLoop === "var-normal") {
+    return loopIteration
+  } else if (startManipulationSecondLoop === "var-mult") {
+    return loopIteration * startSecondManipulationMultiplier
+  } else {
+    return loopIteration * loopIteration
+  }
+}
+
+/**
+ * This computes the end value of the second loop based on the manipulation
+ * @param endManipulationSecondLoop
+ * @param endValueSecondLoop
+ */
+function computeEndValueSecondLoop(
+  endManipulationSecondLoop: BoundsOptions,
+  endValueSecondLoop: number,
+) {
+  if (endManipulationSecondLoop === "none") {
+    return endValueSecondLoop
+  } else if (endManipulationSecondLoop.type === "square") {
+    return endValueSecondLoop * endValueSecondLoop
+  } else if (endManipulationSecondLoop.type === "mult") {
+    return endValueSecondLoop * endManipulationSecondLoop.value
+  } else {
+    return Math.ceil(Math.log2(endValueSecondLoop))
+  }
+}
+
+/**
  * This function generates code for a double for loop
- * We don't use blocks here we can use the same variables for both loops
  *
  * Example:
  * for y from 0 to 9:
  *   if y is square
  *     print("**")
  *   for x from y*2 to 20*2:
- *     if x is even
- *       print("*")
- *     else:
- *       print("**")
+ *     print("*")
  *
- * @param innerVar the name of the first variable
- * @param innerVar2
- * @param numPrint number of stars to print in the if condition
- * @param numPrintElse number of stars to print in the else condition
- * @param numPrintMiddle number of stars to print in between the two loops
- * @param numPrintMiddleIf number of stars to print in the if condition in the first loop
- * @param numPrintMiddleElse
- * @param numPrintAfter print stars after both loops
- * @param numStars total number of stars calculated
+ * @param firstVariableName the name of the first variable
+ * @param secondVariableName
  * @param random
  */
-export function createForForLoop(
-  innerVar: string,
-  innerVar2: string,
-  numPrint: number,
-  numPrintElse: number,
-  numPrintMiddle: number,
-  numPrintMiddleIf: number,
-  numPrintMiddleElse: number,
-  numPrintAfter: number,
-  numStars: number,
-  random: Random,
-) {
+export function createForForLoop(firstVariableName: string, secondVariableName: string, random: Random) {
   // get all possible random variables via helper function
   const {
-    startFirst,
-    stepFirst,
-    endFirst,
-    endFirstManipulation,
-    printStarsMiddle,
-    condMiddle,
-    elseMiddle,
-    startSecond,
-    startSecondManipulation,
-    startSecondManipulationValue,
-    stepSecond,
-    endSecond,
-    endSecondManipulation,
-    condEnd,
-    askFirstVar,
-    elseEnd,
-    printStarsAfter,
+    startValueFirstLoop,
+    stepValueFirstLoop,
+    endValueFirstLoop,
+    endManipulationFirstLoop,
+    printStarsBetweenLoops,
+    conditionFirstLoop,
+    elseFirstLoop,
+    startValueSecondLoop,
+    startManipulationSecondLoop,
+    startSecondManipulationMultiplier,
+    stepValueSecondLoop,
+    endValueSecondLoop,
+    endManipulationSecondLoop,
+    conditionSecondLoop,
+    askFirstVariableInSecondLoop,
+    elseSecondLoop,
+    printStarsAfterBothLoops,
   } = generateForForRandomVariables(random)
 
-  const pseudoCode: PseudoCode = []
-  const pseudoCodeBlock: PseudoCodeBlock = {
-    block: [],
-  }
-  pseudoCode.push(pseudoCodeBlock)
+  const {
+    numPrint,
+    numPrintElse,
+    numPrintBetweenLoops,
+    numPrintSecondCondition,
+    numPrintSecondElse,
+    numPrintAfterAll,
+  } = generateDifferentAmountOfStarPrints(random)
 
-  let firstForStatement: PseudoCodeFor | PseudoCodeForAll
-  if (stepFirst === 1) {
-    // Generate the pseudocode
-    firstForStatement = createForLine({
-      innerVar,
-      start: startFirst.toString(),
-      startManipulation: "none",
-      end: endFirst.toString(),
-      endManipulation: endFirstManipulation,
-    })
-    pseudoCodeBlock.block.push(firstForStatement)
-  } else {
-    const stepSet = createStepSet({
-      start: startFirst,
-      end: endFirst,
-      step: stepFirst,
-      endFirstManipulation,
-    })
-    firstForStatement = createForLine({
-      innerVar,
-      stepSet,
-    })
-    pseudoCodeBlock.block.push(firstForStatement)
-  }
+  const pseudoCodeForForLoop = createPseudoCodeForForLoop(
+    stepValueFirstLoop,
+    firstVariableName,
+    startValueFirstLoop,
+    endValueFirstLoop,
+    endManipulationFirstLoop,
+    printStarsBetweenLoops,
+    numPrintBetweenLoops,
+    conditionFirstLoop,
+    elseFirstLoop,
+    numPrintSecondCondition,
+    numPrintSecondElse,
+    startValueSecondLoop,
+    startManipulationSecondLoop,
+    startSecondManipulationMultiplier,
+    stepValueSecondLoop,
+    secondVariableName,
+    endValueSecondLoop,
+    endManipulationSecondLoop,
+    askFirstVariableInSecondLoop,
+    conditionSecondLoop,
+    elseSecondLoop,
+    numPrint,
+    numPrintElse,
+    printStarsAfterBothLoops,
+    numPrintAfterAll,
+  )
 
-  const firstForBlock: PseudoCodeBlock = {
-    block: [],
-  }
-  // differ between for and forAll (x in {...})
-  if ("forAll" in firstForStatement) {
-    firstForStatement.forAll.do = firstForBlock
-  } else {
-    firstForStatement.for.do = firstForBlock
-  }
-  // printsStarsMiddle
-  if (printStarsMiddle) {
-    firstForBlock.block.push(printStarsNew(numPrintMiddle))
-  }
+  const finalEndValueFirstLoop = computeEndValueFirstLoop(endManipulationFirstLoop, endValueFirstLoop)
+  let numStars = 0
+  for (let i = startValueFirstLoop; i <= finalEndValueFirstLoop; i += stepValueFirstLoop) {
+    if (printStarsBetweenLoops) numStars += numPrintBetweenLoops
 
-  // if middle
-  if (condMiddle !== "none") {
-    const ifForStatementMiddle = createIfCondition({
-      innerVar1: innerVar,
-      condition: condMiddle,
-      elseStatement: elseMiddle,
-      numPrint: numPrintMiddleIf,
-      numPrintElse: numPrintMiddleElse,
-    })
-    firstForBlock.block.push(ifForStatementMiddle)
-  } else {
-    // if the condition is none (we still want to print stars) in this case (printStarsMiddle is false)
-    firstForBlock.block.push(printStarsNew(numPrintMiddleIf))
-  }
+    numStars += calculateNumberOfStars(
+      conditionFirstLoop,
+      i,
+      numPrintSecondCondition,
+      numPrintSecondElse,
+      elseFirstLoop,
+    )
 
-  let startManipulation: BoundsOptions = "none"
-  let startValue: string | PseudoCodeVariable = startSecond.toString()
-  if (startSecondManipulation === "var-normal") {
-    startValue = { variable: innerVar }
-  } else if (startSecondManipulation === "var-mult") {
-    startValue = { variable: innerVar }
-    startManipulation = { type: "mult", value: startSecondManipulationValue }
-  } else if (startSecondManipulation === "var-square") {
-    startValue = { variable: innerVar }
-    // we only have positive numbers so abs is not necessary
-    startManipulation = { type: "square", abs: false }
-  }
-  let secondForStatement: PseudoCodeFor | PseudoCodeForAll
-  if (stepSecond === 1) {
-    // Generate the pseudocode
-    secondForStatement = createForLine({
-      innerVar: innerVar2,
-      start: startValue,
-      startManipulation: startManipulation,
-      end: endSecond.toString(),
-      endManipulation: endSecondManipulation,
-    })
-    firstForBlock.block.push(secondForStatement)
-  } else {
-    const stepSet = createStepSet({
-      start: startSecond,
-      end: endSecond,
-      step: stepSecond,
-      endFirstManipulation: endSecondManipulation,
-    })
-    secondForStatement = createForLine({
-      innerVar: innerVar2,
-      stepSet,
-    })
-    firstForBlock.block.push(secondForStatement)
-  }
+    let j = computeStartValueSecondLoop(
+      startManipulationSecondLoop,
+      i,
+      startSecondManipulationMultiplier,
+      startValueSecondLoop,
+    )
+    const finalEndValueSecondLoop = computeEndValueSecondLoop(
+      endManipulationSecondLoop,
+      endValueSecondLoop,
+    )
 
-  const secondForBlock: PseudoCodeBlock = {
-    block: [],
-  }
-  // differ between for and forAll (x in {...})
-  if ("forAll" in secondForStatement) {
-    secondForStatement.forAll.do = secondForBlock
-  } else {
-    secondForStatement.for.do = secondForBlock
-  }
-
-  // create the if inside the second for loop
-  let askVar = `${innerVar2}`
-  if (askFirstVar) {
-    askVar = `${innerVar}`
-  }
-  if (condEnd !== "none") {
-    const secondIfStatement = createIfCondition({
-      innerVar1: askVar,
-      innerVar2: askVar === innerVar ? innerVar2 : innerVar,
-      condition: condEnd,
-      elseStatement: elseEnd,
-      numPrint,
-      numPrintElse,
-    })
-    secondForBlock.block.push(secondIfStatement)
-  } else {
-    // if there is no if condition we still want to print stars (empty for loop does not make sense)
-    secondForBlock.block.push(printStarsNew(numPrint))
-  }
-
-  // print stars after
-  if (printStarsAfter) {
-    // no inside any loop
-    pseudoCodeBlock.block.push(printStarsNew(numPrintAfter))
-  }
-
-  const endFirstValue =
-    endFirstManipulation === "none"
-      ? endFirst
-      : endFirstManipulation.type === "mult"
-        ? endFirst * endFirstManipulation.value
-        : endFirstManipulation.type === "square"
-          ? endFirst * endFirst
-          : Math.ceil(Math.log2(endFirst))
-
-  // first loop
-  for (let i = startFirst; i <= endFirstValue; i += stepFirst) {
-    if (printStarsMiddle) numStars += numPrintMiddle
-
-    numStars += calculateNumStars(condMiddle, i, numPrintMiddleIf, numPrintMiddleElse, elseMiddle)
-
-    // second loop
-    let j =
-      startSecondManipulation === "var-normal"
-        ? i
-        : startSecondManipulation === "var-mult"
-          ? i * startSecondManipulationValue
-          : startSecondManipulation === "var-square"
-            ? i * i
-            : startSecond
-    const endSecondValue =
-      endSecondManipulation === "none"
-        ? endSecond
-        : endSecondManipulation.type === "square"
-          ? endSecond * endSecond
-          : endSecondManipulation.type === "log"
-            ? Math.ceil(Math.log2(endSecond))
-            : endSecondManipulation.type === "mult"
-              ? endSecond * endSecondManipulation.value
-              : Number.NaN
-
-    if (Number.isNaN(endSecondValue)) {
-      throw new Error("There should not be a manipulation value except none, square, log and mult")
-    }
-
-    for (; j <= endSecondValue; j += stepSecond) {
-      numStars += calculateNumStars(
-        condEnd,
-        askFirstVar ? i : j,
+    for (; j <= finalEndValueSecondLoop; j += stepValueSecondLoop) {
+      numStars += calculateNumberOfStars(
+        conditionSecondLoop,
+        askFirstVariableInSecondLoop ? i : j,
         numPrint,
         numPrintElse,
-        elseEnd,
-        askFirstVar ? j : i,
+        elseSecondLoop,
+        askFirstVariableInSecondLoop ? j : i,
       )
     }
   }
 
-  if (printStarsAfter) numStars += numPrintAfter
+  if (printStarsAfterBothLoops) numStars += numPrintAfterAll
 
-  return { code: pseudoCode, numStars }
-}
-
-function createStepSet({
-  start,
-  end,
-  step,
-  endFirstManipulation,
-}: {
-  start: number
-  end: number
-  step: number
-  endFirstManipulation: BoundsOptions
-}) {
-  if (endFirstManipulation === "none") {
-    let stepSet = "\\{"
-    for (let i = start; i <= end; i += step) {
-      if (i + step <= end) {
-        stepSet += i.toString() + ", "
-      } else {
-        stepSet += i.toString() + "\\}"
-      }
-    }
-    return stepSet
-  } else {
-    let stepSet = `\\{${start}, ${start + step}, ${start + 2 * step}, \\dots, `
-    if (endFirstManipulation.type === "square") {
-      let rowEndNumber = start
-      while (rowEndNumber + step <= end * end) {
-        rowEndNumber += step
-      }
-      // Calculate the difference
-      const difference = rowEndNumber - end * end
-      // Create the stepSet string
-      stepSet += `${end}^2 ${difference < 0 ? difference.toString() : ""}\\}`
-    } else if (endFirstManipulation.type === "mult") {
-      let rowEndNumber = start
-      while (rowEndNumber + step <= end * endFirstManipulation.value) {
-        rowEndNumber += step
-      }
-      const difference = rowEndNumber - end * endFirstManipulation.value
-      stepSet += `${end}\\cdot${endFirstManipulation.value} ${difference < 0 ? difference.toString() : ""}\\}`
-    } else {
-      throw new Error("No other manipulation for endFirstManipulation")
-    }
-
-    return stepSet
-  }
+  return { code: pseudoCodeForForLoop, numStars }
 }
 
 /**
@@ -314,40 +187,37 @@ function createStepSet({
  * @param random
  */
 function generateForForRandomVariables(random: Random) {
-  // currently nut using log (but could just un-comment to use it)
+  // general options to choose from
   const endManipulationOptions: BoundsOptions[] = [
     "none",
     { type: "mult", value: random.int(2, 3) },
     { type: "square", abs: false },
   ]
-  // no square, no same
   const ifOptions: IfOptions[] = ["even", "odd", "none"]
 
-  // at first, we randomly choose all the possible options inside both loops
-  const startFirst = random.int(0, 3)
-  const stepFirst = random.weightedChoice([
+  const startValueFirstLoop = random.int(0, 3)
+  const stepValueFirstLoop = random.weightedChoice([
     [1, 0.5],
     [2, 0.35],
     [3, 0.15],
   ])
-  const endFirst = random.int(6, 10)
+  const endValueFirstLoop = random.int(6, 10)
 
-  const endFirstManipulation: BoundsOptions = random.weightedChoice([
+  const endManipulationFirstLoop: BoundsOptions = random.weightedChoice([
     [endManipulationOptions[0], 0.7],
     [endManipulationOptions[1], 0.125],
     [endManipulationOptions[2], 0.125],
   ])
 
-  let printStarsMiddle = random.bool(0.15)
-
-  const condMiddle: IfOptions = random.choice(ifOptions)
-  const elseMiddle: boolean = condMiddle === "none" ? false : random.bool(0.2)
+  const conditionFirstLoop: IfOptions = random.choice(ifOptions)
+  const elseFirstLoop = conditionFirstLoop === "none" ? false : random.bool(0.2)
   // if condMiddle is none (numPrintMiddleIf will be printed instead of numPrintMiddle)
-  if (condMiddle === "none") printStarsMiddle = false
+  let printStarsBetweenLoops = random.bool(0.15)
+  if (conditionFirstLoop === "none") printStarsBetweenLoops = false
 
-  const startSecond = random.int(0, 3)
-  const startSecondManipulation: "none" | "var-normal" | "var-mult" | "var-square" =
-    endFirstManipulation === "none"
+  const startValueSecondLoop = random.int(0, 3)
+  const startManipulationSecondLoop: "none" | "var-normal" | "var-mult" | "var-square" =
+    endManipulationFirstLoop === "none"
       ? random.weightedChoice([
           ["none", 0.5],
           ["var-normal", 0.3],
@@ -355,10 +225,10 @@ function generateForForRandomVariables(random: Random) {
           ["var-square", 0.1],
         ])
       : "none"
-  const startSecondManipulationValue = random.int(2, 3) // only important for var-normal
+  const startSecondManipulationMultiplier = random.int(2, 3) // only important for var-mult
   // if startSecondManipulation is not none, we cannot display a set nicely (it'd be {x,x+2,x+4,...,19} or so
-  const stepSecond =
-    stepFirst !== 1 || startSecondManipulation !== "none"
+  const stepValueSecondLoop =
+    stepValueFirstLoop !== 1 || startManipulationSecondLoop !== "none"
       ? 1
       : random.weightedChoice([
           [1, 0.2],
@@ -366,27 +236,24 @@ function generateForForRandomVariables(random: Random) {
           [3, 0.4],
         ])
 
-  // just in case, we check if twice
-  if (startSecondManipulation !== "none" && stepSecond > 1) {
-    throw new Error(
-      "If the startSecondManipulation is not none, the stepSecond should be 1, because we cannot display a set nicely",
-    )
-  }
-
   // If we have a manipulation to the start value of the second for based on the first for loop,
   // we may need to increase the endValue of the second for loop for better results.
   // Otherwise, it could be for M from 2*x to 14 (with x \in [2...10])
-  const additionalValue =
-    startSecondManipulation === "var-normal" || startSecondManipulation === "none"
-      ? endFirst
-      : startSecondManipulation === "var-mult"
-        ? endFirst * startSecondManipulationValue
-        : endFirst * endFirst
-  const endSecond =
-    startSecondManipulation === "none" ? random.int(6, 10) : additionalValue + random.int(0, 2) // here the additional value is added
-  // no log option, to avoid: for y from 2*m to ceil(log2(262144)) with y += 1
-  const endSecondManipulation: BoundsOptions =
-    endFirstManipulation !== "none"
+  // Determine the additional value based on the type of manipulation
+  let additionalValue
+  if (startManipulationSecondLoop === "var-normal" || startManipulationSecondLoop === "none") {
+    additionalValue = endValueFirstLoop
+  } else if (startManipulationSecondLoop === "var-mult") {
+    additionalValue = endValueFirstLoop * startSecondManipulationMultiplier
+  } else {
+    additionalValue = endValueFirstLoop * endValueFirstLoop
+  }
+  // Determine the end value for the second loop
+  const endValueSecondLoop =
+    startManipulationSecondLoop === "none" ? random.int(6, 10) : additionalValue + random.int(0, 2)
+
+  const endManipulationSecondLoop: BoundsOptions =
+    endManipulationFirstLoop !== "none"
       ? "none"
       : random.weightedChoice([
           [endManipulationOptions[0], 0.7],
@@ -395,37 +262,36 @@ function generateForForRandomVariables(random: Random) {
         ])
 
   // definitely print stars at the end
-  const condEnd: IfOptions = random.choice(["even", "odd", "same", "square", "none"])
-  // if I want to ask inside the second if statement for a condition
-  // based on the variable inside the first for loop
-  const askFirstVar = random.weightedChoice([
+  const conditionSecondLoop: IfOptions = random.choice(["even", "odd", "same", "square", "none"])
+  // using the variable from the first loop for a condition in the second loop
+  const askFirstVariableInSecondLoop = random.weightedChoice([
     [true, 0.15],
     [false, 0.85],
   ])
-  const elseEnd =
-    condEnd === "none" || elseMiddle // no two else statements (would be too much)
+  const elseSecondLoop =
+    conditionSecondLoop === "none" || elseFirstLoop // no two else statements (would be too much)
       ? false
       : random.bool()
 
-  const printStarsAfter = random.bool(0.05)
+  const printStarsAfterBothLoops = random.bool(0.05)
 
   return {
-    startFirst,
-    stepFirst,
-    endFirst,
-    endFirstManipulation,
-    printStarsMiddle,
-    condMiddle,
-    elseMiddle,
-    startSecond,
-    startSecondManipulation,
-    startSecondManipulationValue,
-    stepSecond,
-    endSecond,
-    endSecondManipulation,
-    condEnd,
-    askFirstVar,
-    elseEnd,
-    printStarsAfter,
+    startValueFirstLoop,
+    stepValueFirstLoop,
+    endValueFirstLoop,
+    endManipulationFirstLoop,
+    printStarsBetweenLoops,
+    conditionFirstLoop,
+    elseFirstLoop,
+    startValueSecondLoop,
+    startManipulationSecondLoop,
+    startSecondManipulationMultiplier,
+    stepValueSecondLoop,
+    endValueSecondLoop,
+    endManipulationSecondLoop,
+    conditionSecondLoop,
+    askFirstVariableInSecondLoop,
+    elseSecondLoop,
+    printStarsAfterBothLoops,
   }
 }

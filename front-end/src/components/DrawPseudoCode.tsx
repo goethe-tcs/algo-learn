@@ -45,7 +45,7 @@ export function DrawPseudoCode({ displayCode }: { displayCode: string }): ReactE
         <div className="min-h-28 overflow-hidden rounded-lg border border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
           <div className="whitespace-nowrap">
             {toggleStateColor ? (
-              <pre className="select-none overflow-x-auto whitespace-pre py-3 pl-5 pr-10 font-mono leading-normal text-gray-900 dark:text-gray-100">
+              <pre className="overflow-x-auto whitespace-pre py-3 pl-5 pr-10 font-mono leading-normal text-gray-900 dark:text-gray-100">
                 <CodeJSX
                   currentCode={pseudoCodeStringColor}
                   toggleStateLines={toggleStateLines}
@@ -53,7 +53,7 @@ export function DrawPseudoCode({ displayCode }: { displayCode: string }): ReactE
                 />
               </pre>
             ) : (
-              <pre className="select-none overflow-x-auto whitespace-pre py-3 pl-5 pr-10 font-mono leading-normal text-gray-900 dark:text-gray-100">
+              <pre className="overflow-x-auto whitespace-pre py-3 pl-5 pr-10 font-mono leading-normal text-gray-900 dark:text-gray-100">
                 <CodeJSX
                   currentCode={pseudoCodeString}
                   toggleStateLines={toggleStateLines}
