@@ -3,7 +3,6 @@
   import { ADD_TEXTFIELDS_AFTERWARDS, type FormContextValue } from "$lib/components/types.ts"
   import { inputClass } from "$lib/components/ui/MultiInput/cnInput.ts"
   import FeedbackComp from "$lib/components/ui/MultiInput/FeedbackComp.svelte"
-  import { getTextFieldStateValues } from "$lib/context/textFieldStateValues.ts"
   import { cn } from "$lib/utils.ts"
   import { getExtraStyles } from "$lib/utils/MultiTextInput.ts"
   import { getContext } from "svelte"

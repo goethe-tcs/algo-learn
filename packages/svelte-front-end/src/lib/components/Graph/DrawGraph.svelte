@@ -54,25 +54,29 @@
   const edgeClickType = $derived(graph.edgeClickType)
 
   let fieldOpen = $state(false)
-  const inputFieldBase = graph.inputFieldID ?? null
-  const hasInputFieldId = inputFieldBase !== null
-  const nodeId = hasInputFieldId ? nodeInputFieldID(inputFieldBase) : null
-  const edgeId = hasInputFieldId ? edgeInputFieldID(inputFieldBase) : null
-  const nodeInputFieldMd = nodeId ? `${nodeId}#TL###` : null
-  const edgeInputFieldMd = edgeId ? `${edgeId}#TL###` : null
+  const inputFieldBase = $derived(graph.inputFieldID ?? null)
+  const hasInputFieldId = $derived(inputFieldBase !== null)
+  const nodeId = $derived.by(() => (inputFieldBase ? nodeInputFieldID(inputFieldBase) : null))
+  const edgeId = $derived.by(() => (inputFieldBase ? edgeInputFieldID(inputFieldBase) : null))
+  const nodeInputFieldMd = $derived(nodeId ? `${nodeId}#TL###` : null)
+  const edgeInputFieldMd = $derived(edgeId ? `${edgeId}#TL###` : null)
 
-  // register fields first so parent/provider can add them
-  let addTextFieldAfterwards = undefined
-  if (hasInputFieldId) {
-    const { addTextFieldAfterwards: atfa } = getContext<FormContextValue>(ADD_TEXTFIELDS_AFTERWARDS)
-    addTextFieldAfterwards = atfa
-  }
-  if (hasInputFieldId && graph.nodeClickType !== "none") {
-    addTextFieldAfterwards!(nodeInputFieldMd!)
-  }
-  if (hasInputFieldId && graph.edgeClickType !== "none") {
-    addTextFieldAfterwards!(edgeInputFieldMd!)
-  }
+  const { addTextFieldAfterwards } = getContext<FormContextValue>(ADD_TEXTFIELDS_AFTERWARDS)
+
+  let registeredInputFieldBase: number | null = null
+  $effect(() => {
+    const currentInputFieldBase = inputFieldBase
+    if (currentInputFieldBase === null || registeredInputFieldBase === currentInputFieldBase) return
+
+    if (nodeClickType !== "none" && nodeInputFieldMd) {
+      addTextFieldAfterwards(nodeInputFieldMd)
+    }
+    if (edgeClickType !== "none" && edgeInputFieldMd) {
+      addTextFieldAfterwards(edgeInputFieldMd)
+    }
+
+    registeredInputFieldBase = currentInputFieldBase
+  })
 
   // get context (the provider should keep this object reactive)
   const context = getContext<FormContextValue>(ADD_TEXTFIELDS_AFTERWARDS)
