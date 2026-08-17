@@ -1,5 +1,6 @@
 import type {
   MultiFreeTextFeedbackFunction,
+  MultiFreeTextFormatFunction,
   MultiFreeTextQuestion,
 } from "@shared/api/QuestionGenerator.ts"
 import { AxbGenerator } from "@shared/question-generators/math/linearAlgebra/axb/axbGen"
@@ -26,6 +27,14 @@ export function generateVariantStartAxb(
   lang: "de" | "en",
   permalink: string,
 ) {
+  const checkFormat: MultiFreeTextFormatFunction = ({ text }, fieldID) => {
+    // check if is a number
+    if (!/^\d+$/.test(text[fieldID])) {
+      return { valid: false, message: t(translations, lang, "validationOnlyNumbers") }
+    }
+    return { valid: true, message: "" }
+  }
+
   const feedback: MultiFreeTextFeedbackFunction = ({ text }) => {
     // rebuild an x vector from the input fields
     const userX: number[] = []
@@ -74,6 +83,7 @@ export function generateVariantStartAxb(
     path: permalink,
     fillOutAll: true,
     text: t(translations, lang, "text", [matrixToTex(A, "r"), vectorToTex(b), matrixInput.matrixInput]),
+    checkFormat,
     feedback,
   }
 

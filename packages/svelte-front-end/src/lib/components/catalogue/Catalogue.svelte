@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from "$app/environment"
   import FilterSortHeader from "$lib/components/catalogue/FilterSortHeader.svelte"
   import Topic from "$lib/components/catalogue/Topic.svelte"
   import TvGenerators from "$lib/components/catalogue/TVGenerators.svelte"
@@ -53,6 +54,21 @@
     }),
   )
   const rows = $derived(_.chunk(sorted, columns))
+
+  const storageKey = "catalogue.selectedGroup.session"
+
+  if (browser) {
+    const stored = sessionStorage.getItem(storageKey)
+    if (stored && collection.some((group) => group.slug === stored)) {
+      selectedGroup = stored
+    }
+  }
+
+  $effect(() => {
+    if (!browser) return
+    if (selectedGroup) sessionStorage.setItem(storageKey, selectedGroup)
+    else sessionStorage.removeItem(storageKey)
+  })
 
   function toggleGroup(slug: string) {
     // Toggle open/close instantly

@@ -423,7 +423,7 @@ export function parseRecursiveFunction(input: string): {
  * theorem can be applied on.
  *
  * @param random - Random number generator
- * @returns - Returns the parameters a, b, c , d, the Theta runtime of the
+ * @returns - Returns the parameters a, b, c , d, the Theta asymptotic expression of the
  *   function, as well as which master theorem case is being used.
  */
 export function sampleMasterRecursion(random: Random) {
@@ -483,7 +483,7 @@ export function sampleMasterRecursion(random: Random) {
   }
 }
 /**
- * Sample a set of Theta runtimes. The runtimes are: Theta(n^log_b(a)),
+ * Sample a set of Theta expressions. The expressions are: Theta(n^log_b(a)),
  * Theta(n^log_b(a) * log(n)), Theta(c) and Theta(c * log(n)) If c = n^logb(a)
  * (master theorem case 2) then Theta(c) and Theta(c * log(n)) get randomized.
  *
@@ -508,7 +508,7 @@ export function sampleMasterRecursionAnswers({
     correct: boolean
     element: string
   }> = []
-  function runTime(a: number, b: number) {
+  function runningTime(a: number, b: number) {
     return log(a, b) === 0
       ? "1"
       : log(a, b) === 1
@@ -523,12 +523,12 @@ export function sampleMasterRecursionAnswers({
   answers.push({
     key: "1",
     correct: masterCase === 1,
-    element: `\\Theta(${runTime(a, b)})`,
+    element: `\\Theta(${runningTime(a, b)})`,
   })
   answers.push({
     key: "2",
     correct: masterCase === 2,
-    element: `\\Theta(${log(a, b) === 0 ? "" : runTime(a, b)} \\log(n))`,
+    element: `\\Theta(${log(a, b) === 0 ? "" : runningTime(a, b)} \\log(n))`,
   })
   let secondTerm = createProductTerm({
     coefficient: new Fraction(1),

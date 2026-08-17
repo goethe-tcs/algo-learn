@@ -11,6 +11,9 @@ export type MODE =
   | "correct" // According to the feedback, the answer was correct
   | "incorrect" // According to the feedback, the answer was incorrect
 
+/** Possible ways to display feedback on an answer */
+export type FeedbackVariation = "below" | "overlay"
+
 /**
  * TextFieldState is the state of a single text input field.
  */
@@ -18,7 +21,7 @@ export type TextFieldState = {
   text: string // the current contents of the input field
   type: string // the type of the input field
   prompt: string // the prompt text of the input field
-  feedbackVariation: string // the feedback variation of the input field
+  feedbackVariation: FeedbackVariation // the feedback variation of the input field
   setText?: (text: string) => void // callback when the user changes the value
   placeholder: string // the placeholder text of the input (usually in gray)
   invalid: boolean // the mode of the input field

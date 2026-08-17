@@ -8,7 +8,11 @@ import type { ExpectedParameters, Parameters } from "./Parameters.ts"
  * optional properties. If this is not possible, a new question type should be
  * added.
  */
-export type Question = MultipleChoiceQuestion | FreeTextQuestion | MultiFreeTextQuestion
+export type Question =
+  | MultipleChoiceQuestion
+  | FreeTextQuestion
+  | MultiFreeTextQuestion
+  | MatchingQuestion
 
 /**
  * Base type for all question types; they must contain the already-translated
@@ -63,6 +67,30 @@ export interface MultipleChoiceAnswer {
    * if sortingQuestion is true
    */
   choice: number[]
+}
+
+/**
+ * MatchingQuestion stores the generated data of matching-style questions.
+ * A matching question consists of fixed items and answer items that the user
+ * must pair correctly.
+ */
+export interface MatchingQuestion extends QuestionBase {
+  type: "MatchingQuestion"
+
+  /** List of fixed items (left column) */
+  fixedItems: string[]
+
+  /** List of answer items (right column) */
+  answers: string[]
+
+  /** Optional number of columns for matching layout (desktop only) */
+  columns?: number
+
+  /** If all input fields need to be filled out. Defaults to false */
+  fillOutAll?: boolean
+
+  /** The feedback function for matching questions; defaults to undefined */
+  feedback?: MatchingFeedbackFunction
 }
 
 /**
@@ -134,6 +162,22 @@ export function minimalMultipleChoiceFeedback({
     return { correct, correctChoice, feedbackText }
   }
 }
+
+/**
+ * The feedback object returned by the feedback function for matching questions.
+ */
+export interface MatchingFeedback extends FeedbackBase {
+  /** Per-row correctness (true/false for each pair) */
+  rowCorrectness?: boolean[]
+
+  /** A table or explanation of correct matches (optional) */
+  correctAnswer?: string
+}
+
+/** The signature of the feedback function for matching questions */
+export type MatchingFeedbackFunction = (
+  answer: MultipleChoiceAnswer,
+) => MatchingFeedback | Promise<MatchingFeedback>
 
 /**
  * FreeTextQuestion stores the generated data of free text questions. Free text

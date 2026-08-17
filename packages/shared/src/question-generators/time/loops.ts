@@ -17,6 +17,7 @@ const translations: Translations = {
     description: "Determine the number of iterations in a loop",
     simpleExactDescription: "Consider the following code:",
     simpleExactQuestion: "How many stars are printed?",
+    "feedback.nan": "Not a number",
   },
   de: {
     name: "Schleifen",
@@ -24,6 +25,7 @@ const translations: Translations = {
     description: "Bestimme die Anzahl der Iterationen in einer Schleife",
     simpleExactDescription: "Betrachte den folgenden Code:",
     simpleExactQuestion: "Wie viele Sterne werden ausgegeben?",
+    "feedback.nan": "keine Zahl",
   },
 }
 

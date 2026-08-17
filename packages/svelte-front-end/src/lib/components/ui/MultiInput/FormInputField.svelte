@@ -3,6 +3,7 @@
   import { ADD_TEXTFIELDS_AFTERWARDS, type FormContextValue } from "$lib/components/types.ts"
   import { inputClass } from "$lib/components/ui/MultiInput/cnInput.ts"
   import FeedbackComp from "$lib/components/ui/MultiInput/FeedbackComp.svelte"
+  import { getTextFieldStateValues } from "$lib/context/textFieldStateValues.ts"
   import { cn } from "$lib/utils.ts"
   import { getExtraStyles } from "$lib/utils/MultiTextInput.ts"
   import { getContext } from "svelte"
@@ -64,23 +65,21 @@
           <input
             class={`${cn(inputClass, inputBorderColor, additionalClassnames)}`}
             bind:this={firstInputRef}
+            {id}
+            name={id}
             {disabled}
-            value={text || ""}
+            value={text}
             oninput={handleChange}
             maxlength={type === "TTABLE" ? 1 : undefined}
             onfocus={() => setIsInputFocused(true)}
             onblur={() => setIsInputFocused(false)}
             type="text"
             style={fieldWidth ? `width: ${fieldWidth}ch` : undefined}
-            placeholder={placeholder || ""}
+            {placeholder}
           />
         </div>
       </div>
-      <FeedbackComp
-        formatFeedback={feedback ? feedback : ""}
-        {invalid}
-        type={feedbackVariation === "below" ? "below" : "overlay"}
-      />
+      <FeedbackComp formatFeedback={feedback ?? ""} {invalid} type={feedbackVariation} />
     </div>
     {@render spacingSnippet()}
   </div>
@@ -93,22 +92,20 @@
         <input
           class={`${cn(inputClass, inputBorderColor, additionalClassnames)}`}
           bind:this={firstInputRef}
+          {id}
+          name={id}
           {disabled}
-          value={text || ""}
+          value={text}
           oninput={handleChange}
           maxlength={type === "TTABLE" ? 1 : undefined}
           onfocus={() => setIsInputFocused(true)}
           onblur={() => setIsInputFocused(false)}
           type="text"
           style={fieldWidth ? `width: ${fieldWidth}ch` : undefined}
-          placeholder={placeholder || ""}
+          {placeholder}
         />
         {#if isInputFocused && feedback && text}
-          <FeedbackComp
-            formatFeedback={feedback ? feedback : ""}
-            {invalid}
-            type={feedbackVariation === "below" ? "below" : "overlay"}
-          />
+          <FeedbackComp formatFeedback={feedback ?? ""} {invalid} type={feedbackVariation} />
         {/if}
       </div>
     </div>

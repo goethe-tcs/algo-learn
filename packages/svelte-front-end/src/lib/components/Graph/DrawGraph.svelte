@@ -48,8 +48,8 @@
       .map((edge) => ({ ...edge }))
   }
 
-  let nodeList = $state(cloneNodesForState(graph.nodes))
-  let edgeListFlat = $state(buildEdgeListForState(graph))
+  let nodeList = $derived(cloneNodesForState(graph.nodes))
+  let edgeListFlat = $derived(buildEdgeListForState(graph))
   const nodeClickType = $derived(graph.nodeClickType)
   const edgeClickType = $derived(graph.edgeClickType)
 
@@ -174,27 +174,31 @@
     edgeInputSetText(edgeField(), edgeListFlat, graph)
   }
 
-  const dimensions = graph.getDimensions()
+  const dimensions = $derived(graph.getDimensions())
   const margin = 0.7
-  const viewBox = {
-    x: (dimensions.minX - margin) * coordinateScale,
-    y: (dimensions.minY - margin) * coordinateScale,
-    width: (dimensions.width + 2 * margin) * coordinateScale,
-    height: (dimensions.height + 2 * margin) * coordinateScale,
-  }
-
   const minViewBox = { width: 100, height: 100 }
-  if (viewBox.width < minViewBox.width) {
-    viewBox.x -= (minViewBox.width - viewBox.width) * 0.5
-    viewBox.width = minViewBox.width
-  }
+  const viewBox = $derived.by(() => {
+    const vb = {
+      x: (dimensions.minX - margin) * coordinateScale,
+      y: (dimensions.minY - margin) * coordinateScale,
+      width: (dimensions.width + 2 * margin) * coordinateScale,
+      height: (dimensions.height + 2 * margin) * coordinateScale,
+    }
 
-  if (viewBox.height < minViewBox.height) {
-    viewBox.y -= (minViewBox.height - viewBox.height) * 0.5
-    viewBox.height = minViewBox.height
-  }
+    if (vb.width < minViewBox.width) {
+      vb.x -= (minViewBox.width - vb.width) * 0.5
+      vb.width = minViewBox.width
+    }
 
-  const viewBoxAspectRatio = Math.min(maxHeight / maxWidth, viewBox.height / viewBox.width)
+    if (vb.height < minViewBox.height) {
+      vb.y -= (minViewBox.height - vb.height) * 0.5
+      vb.height = minViewBox.height
+    }
+
+    return vb
+  })
+
+  const viewBoxAspectRatio = $derived(Math.min(maxHeight / maxWidth, viewBox.height / viewBox.width))
 
   function updateDraggedNode(clientX: number, clientY: number) {
     if (currentlyDragged === null || !svgRef) return

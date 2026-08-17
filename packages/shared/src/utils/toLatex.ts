@@ -130,7 +130,6 @@ ${q.answers.map((answer) => "  \\item\n" + indent(markdownToLatex(answer).trim()
     const inner = markdownToLatex(q.text ?? "").trim()
     return template.replace("%INNER%", indent(inner, 2))
   } else {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`Unsupported question type: ${t}`)
   }
 }

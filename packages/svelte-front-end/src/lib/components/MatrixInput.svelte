@@ -1,20 +1,19 @@
 <script lang="ts">
   import Markdown from "$lib/components/markdown/markdown.svelte"
-  import Parentheses from "$lib/components/ui/Parentheses.svelte"
-  import { getTheme } from "$lib/theme.svelte.ts"
+  import { DARK, derivedTheme } from "$lib/theme.svelte.ts"
   import type { MatrixInputProps } from "@shared/utils/matrixInput.ts"
+  import Parenthesis from "./ui/Parenthesis.svelte"
 
   interface Props {
     x: string
   }
   const { x }: Props = $props()
 
-  const parsedMatrixObject = JSON.parse(x) as MatrixInputProps
-  const rows = parsedMatrixObject.rows
-  const cols = parsedMatrixObject.cols
+  const parsedMatrixObject = $derived(JSON.parse(x) as MatrixInputProps)
+  const rows = $derived(parsedMatrixObject.rows)
+  const cols = $derived(parsedMatrixObject.cols)
 
-  const theme = getTheme()
-  const svgColor = theme === "dark" ? "white" : "black"
+  const svgColor = $derived(derivedTheme() === DARK ? "white" : "black")
 </script>
 
 <div class="flex items-center justify-center">
@@ -23,11 +22,11 @@
     <tbody>
       <tr class="h-1">
         <td class="h-full" rowSpan={rows + 2}>
-          <Parentheses side="l" {svgColor} />
+          <Parenthesis side="l" {svgColor} />
         </td>
         <td colSpan={cols}></td>
         <td class="h-full" rowSpan={rows + 2}>
-          <Parentheses {svgColor} side="r" />
+          <Parenthesis side="r" {svgColor} />
         </td>
       </tr>
       {#each Array.from({ length: rows }, (_, i) => i) as i (i)}

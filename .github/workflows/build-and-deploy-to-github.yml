@@ -1,0 +1,57 @@
+name: Build and deploy to GitHub Pages when pushed to stable branch
+on:
+  push:
+    branches: [stable]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies 🔧
+        run: |
+          bun install --frozen-lockfile
+      - name: Write basename and version number to packages/svelte-front-end/src/lib/config.js
+        run: |
+          sed -i "s/^export const BASENAME =.*$/export const BASENAME = \"\/algo-learn\"/g" packages/svelte-front-end/src/lib/config.js
+          sed -i "s/^export const VERSION =.*$/export const VERSION = \"$(git rev-parse --short $GITHUB_SHA)\"/g" packages/svelte-front-end/src/lib/config.js
+      - name: Build 🔧
+        run: bun run --bun build --mode production --base /algo-learn/
+      - name: Upload static files as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: packages/svelte-front-end/build/
+
+  # Deployment job
+  deploy:
+    needs: build
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

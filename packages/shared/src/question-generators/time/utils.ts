@@ -93,7 +93,7 @@ export function getCompare(random: Random, com: "<" | ">" | "<<" | ">>"): WhileC
  * @param startManipulation
  * @param endValueLoop
  * @param endManipulation
- * @param timeOrStars (if used to print stars or to determine the runtime of code)
+ * @param timeOrStars (if used to print stars or to determine the running time of code)
  */
 export function createBasicForLine({
   variableName,

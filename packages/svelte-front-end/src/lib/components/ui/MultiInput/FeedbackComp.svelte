@@ -1,5 +1,6 @@
 <script lang="ts">
   import Markdown from "$lib/components/markdown/markdown.svelte"
+  import type { FeedbackVariation } from "$lib/components/types"
   import { globalTranslations } from "$lib/translation.ts"
   import { getLanguage } from "$lib/utils/langState.svelte.ts"
   import type { Language } from "@shared/api/Language.ts"
@@ -8,7 +9,7 @@
   interface Props {
     formatFeedback: string
     invalid: boolean
-    type: "overlay" | "below" // overlay means: feedback shown below the input field over other components
+    type: FeedbackVariation // overlay means: feedback shown below the input field over other components
   }
   const { formatFeedback, invalid, type }: Props = $props()
 

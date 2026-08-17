@@ -19,15 +19,16 @@
   }
   const { displayCode }: Props = $props()
 
-  const pseudoCodeStringParse: PseudoCode = JSON.parse(displayCode) as PseudoCode
+  const pseudoCodeStringParse: PseudoCode = $derived(JSON.parse(displayCode) as PseudoCode)
 
-  const { pseudoCodeString, pseudoCodeStringColor, pseudoCodeStringLatex } =
-    pseudoCodeToString(pseudoCodeStringParse)
+  const { pseudoCodeString, pseudoCodeStringColor, pseudoCodeStringLatex } = $derived(
+    pseudoCodeToString(pseudoCodeStringParse),
+  )
 
   const lang = $derived(getLanguage())
   const { t } = $derived(tFunction(globalTranslations, lang))
 
-  const numCodeLines = pseudoCodeString.length
+  const numCodeLines = $derived(pseudoCodeString.length)
 
   let toggleStateLines = $state(true)
   let toggleStateColor = $state(true)

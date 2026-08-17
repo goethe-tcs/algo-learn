@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import Random, { sampleRandomSeed } from "@shared/utils/random.ts"
+import Random, { sampleRandomSeed } from "@shared/utils/random"
 import { Graph, RandomGraph, RootedTree, type Edge } from "./graph.ts"
 
 // TODO: Additional parsing test coverage:
