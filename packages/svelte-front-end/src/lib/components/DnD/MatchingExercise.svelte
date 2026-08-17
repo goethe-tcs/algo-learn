@@ -26,8 +26,16 @@
   const { pairs, answers, disabled = false, onChange, onModeChange, columns = 2 }: Props = $props()
 
   // pool uses the supplied items (cloned so we don't mutate caller's array)
-  let pool = $state<SlotItem[]>(structuredClone(answers))
-  let slots = $state<(SlotItem | null)[]>(Array(pairs.length).fill(null))
+  let pool = $state<SlotItem[]>([])
+  let slots = $state<(SlotItem | null)[]>([])
+  $effect(() => {
+    // tracking answers as dependency
+    const newAnswers = structuredClone(answers)
+
+    // rebuild slots array based on pairs and answers
+    const usedIds = new Set(slots.filter(Boolean).map((s) => s!.id))
+    pool = newAnswers.filter((a) => !usedIds.has(a.id))
+  })
   let activeItem = $state<SlotItem | null>(null)
 
   let isDraggingFromSlot = $state(false)

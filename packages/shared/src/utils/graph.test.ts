@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import Random from "@shared/utils/random.ts"
+import Random from "@shared/utils/random"
 import { Graph, RandomGraph, RootedTree, type Edge } from "./graph.ts"
 
 test("parse", () => {

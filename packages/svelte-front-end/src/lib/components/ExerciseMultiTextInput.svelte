@@ -2,12 +2,11 @@
   import InteractWithQuestion from "$lib/components/InteractWithQuestion.svelte"
   import Markdown from "$lib/components/markdown/markdown.svelte"
   import type { MODE, Result, TextFieldState } from "$lib/components/types.ts"
-  import { playSound } from "$lib/sound.svelte.ts"
+  import { setTextFieldStateValues } from "$lib/context/textFieldStateValues.ts"
   import { globalTranslations } from "$lib/translation.ts"
   import { isMobileOrTablet } from "$lib/utils/deviceInformation"
   import { getLanguage } from "$lib/utils/langState.svelte.ts"
   import { getInputFields } from "$lib/utils/MultiTextInput.ts"
-  import { setContext } from "svelte"
   import type { Language } from "@shared/api/Language.ts"
   import type { FreeTextFeedback, MultiFreeTextQuestion } from "@shared/api/QuestionGenerator.ts"
   import { tFunction } from "@shared/utils/translations.ts"
@@ -22,6 +21,8 @@
   const lang: Language = $derived(getLanguage())
   const { t } = $derived(tFunction([globalTranslations], lang))
 
+  const fieldValues = $derived(getInputFields(question.text ? question.text : ""))
+
   const questionState: {
     mode: MODE
     modeID: { [key: string]: MODE }
@@ -29,11 +30,42 @@
     feedbackObject?: FreeTextFeedback
     formatFeedback: { [key: string]: string }
   } = $state({
-    mode: !question.fillOutAll ? "draft" : "invalid",
+    mode: "invalid",
     modeID: {},
     text: {},
     formatFeedback: {},
   })
+
+  $effect(() => {
+    questionState.mode = !question.fillOutAll ? "draft" : "invalid"
+    for (const id of fieldValues.inputIds) {
+      if (!questionState.text[id]) {
+        questionState.text[id] = ""
+        questionState.modeID[id] = "initial"
+        questionState.formatFeedback[id] = ""
+      }
+    }
+  })
+
+  const textFieldStateValues: { [p: string]: TextFieldState } = $derived(
+    fieldValues.inputIds.reduce<{ [key: string]: TextFieldState }>((acc, id, i) => {
+      acc[id] = {
+        text: questionState.text[id],
+        type: fieldValues.inputTypes[i],
+        prompt: fieldValues.inputPrompts[i],
+        feedbackVariation: fieldValues.inputFeedbackVariations[i],
+        setText: (text: string) => setText(id, text),
+        placeholder: fieldValues.inputPlaceholders[i],
+        invalid: questionState.modeID[id] === "invalid",
+        disabled: questionState.mode === "correct" || questionState.mode === "incorrect",
+        feedback: questionState.formatFeedback[id],
+        focus: i === 0 && !isMobileOrTablet,
+      }
+      return acc
+    }, {}),
+  )
+
+  setTextFieldStateValues(() => textFieldStateValues)
 
   function checkOverallMode(currentModeIDs: { [x: string]: string }) {
     if (!question.fillOutAll) return "draft"
@@ -46,30 +78,30 @@
     return "draft"
   }
 
+  function applyValidation(fieldID: string, value: string, valid: boolean) {
+    questionState.text[fieldID] = value
+    questionState.modeID[fieldID] = valid ? "draft" : value === "" ? "initial" : "invalid"
+    questionState.mode = checkOverallMode({
+      ...questionState.modeID,
+    })
+  }
+
   function setText(fieldID: string, value: string) {
     questionState.text[fieldID] = value
     if (question.checkFormat) {
       void Promise.resolve(
         question.checkFormat({ text: { ...questionState.text, [fieldID]: value } }, fieldID),
       ).then(({ valid, message }) => {
-        questionState.text[fieldID] = value
-        questionState.modeID[fieldID] = valid ? "draft" : value === "" ? "initial" : "invalid"
-        questionState.formatFeedback[fieldID] = !valid
-          ? message
-            ? message
-            : ""
-          : message
-            ? message
-            : ""
-        questionState.mode = checkOverallMode({
-          ...questionState.modeID,
-          [fieldID]: valid ? "draft" : "invalid",
-        })
+        applyValidation(fieldID, value, valid)
+        questionState.formatFeedback[fieldID] = !valid ? (message ?? "") : ""
       })
     } else {
       const valid = value.trim().length > 0 || !question.fillOutAll
-      questionState.text[fieldID] = value
-      questionState.mode = valid ? "draft" : "invalid"
+      // todo this Promise makes the check button update correctly but it seems to be a workaround
+      //  for a structural issue.
+      void Promise.resolve().then(() => {
+        applyValidation(fieldID, value, valid)
+      })
     }
   }
 
@@ -79,10 +111,8 @@
         void Promise.resolve(question.feedback({ text: questionState.text })).then((feedbackObject) => {
           let mode: MODE = "draft"
           if (feedbackObject.correct === true) {
-            playSound("pass")
             mode = "correct"
           } else if (feedbackObject.correct === false) {
-            playSound("fail")
             mode = "incorrect"
           }
           questionState.mode = mode
@@ -105,35 +135,16 @@
     }
   }
 
-  const fieldValues = getInputFields(question.text ? question.text : "")
-
-  for (let i = 0; i < fieldValues.inputIds.length; i++) {
-    if (!questionState.text[fieldValues.inputIds[i]]) {
-      questionState.text[fieldValues.inputIds[i]] = ""
-      questionState.modeID[fieldValues.inputIds[i]] = "initial"
-      questionState.formatFeedback[fieldValues.inputIds[i]] = ""
-    }
-  }
-
-  const textFieldStateValues: { [p: string]: TextFieldState } = $derived(
-    fieldValues.inputIds.reduce<{ [key: string]: TextFieldState }>((acc, id, i) => {
-      acc[id] = {
-        text: questionState.text[id],
-        type: fieldValues.inputTypes[i],
-        prompt: fieldValues.inputPrompts[i],
-        feedbackVariation: fieldValues.inputFeedbackVariations[i],
-        setText: (text: string) => setText(id, text),
-        placeholder: fieldValues.inputPlaceholders[i],
-        invalid: questionState.modeID[id] === "invalid",
-        disabled: questionState.mode === "correct" || questionState.mode === "incorrect",
-        feedback: questionState.formatFeedback[id],
-        focus: i === 0 && !isMobileOrTablet,
-      }
-      return acc
-    }, {}),
-  )
-
-  setContext("textFieldStateValues", () => textFieldStateValues)
+  $effect(() => {
+    void lang
+    if (question.feedback === undefined) return
+    if (questionState.mode !== "correct" && questionState.mode !== "incorrect") return
+    const textSnapshot = { ...questionState.text }
+    void Promise.resolve(question.feedback({ text: textSnapshot })).then((feedbackObject) => {
+      if (questionState.mode !== "correct" && questionState.mode !== "incorrect") return
+      questionState.feedbackObject = feedbackObject
+    })
+  })
 </script>
 
 <InteractWithQuestion

@@ -17,9 +17,9 @@
   // limited by the number of colors we have. See tailwind --color-group-0,...,--color-group-7.
   const maxGroups = 8
 
-  const edgeListFlat = graph.edges
-    .flat()
-    .filter(graph.directed ? () => true : (e) => e.source < e.target)
+  const edgeListFlat = $derived(
+    graph.edges.flat().filter(graph.directed ? () => true : (e) => e.source < e.target),
+  )
 
   let currentlyDragged = $state<null | number>(null)
 
@@ -65,31 +65,34 @@
         const next = s.group === max ? null : s.group === null ? 0 : s.group + 1
         return { ...s, group: next }
       })
-      console.log(nodeStates[i])
     }
   }
 
-  const dimensions = graph.getDimensions()
+  const dimensions = $derived(graph.getDimensions())
   const margin = 0.7
-  const viewBox = {
-    x: (dimensions.minX - margin) * coordinateScale,
-    y: (dimensions.minY - margin) * coordinateScale,
-    width: (dimensions.width + 2 * margin) * coordinateScale,
-    height: (dimensions.height + 2 * margin) * coordinateScale,
-  }
-
   const minViewBox = { width: 100, height: 100 }
-  if (viewBox.width < minViewBox.width) {
-    viewBox.x -= (minViewBox.width - viewBox.width) * 0.5
-    viewBox.width = minViewBox.width
-  }
+  const viewBox = $derived.by(() => {
+    const vb = {
+      x: (dimensions.minX - margin) * coordinateScale,
+      y: (dimensions.minY - margin) * coordinateScale,
+      width: (dimensions.width + 2 * margin) * coordinateScale,
+      height: (dimensions.height + 2 * margin) * coordinateScale,
+    }
 
-  if (viewBox.height < minViewBox.height) {
-    viewBox.y -= (minViewBox.height - viewBox.height) * 0.5
-    viewBox.height = minViewBox.height
-  }
+    if (vb.width < minViewBox.width) {
+      vb.x -= (minViewBox.width - vb.width) * 0.5
+      vb.width = minViewBox.width
+    }
 
-  const viewBoxAspectRatio = Math.min(maxHeight / maxWidth, viewBox.height / viewBox.width)
+    if (vb.height < minViewBox.height) {
+      vb.y -= (minViewBox.height - vb.height) * 0.5
+      vb.height = minViewBox.height
+    }
+
+    return vb
+  })
+
+  const viewBoxAspectRatio = $derived(Math.min(maxHeight / maxWidth, viewBox.height / viewBox.width))
 
   function updateDraggedNode(clientX: number, clientY: number) {
     if (currentlyDragged === null || !svgRef) return

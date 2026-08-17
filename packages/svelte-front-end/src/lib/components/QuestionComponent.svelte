@@ -14,14 +14,16 @@
   const { question, onResult, regenerate }: Props = $props()
 </script>
 
-{#if question.type === "MatchingQuestion"}
-  <ExerciseMatching {question} permalink={question.path} {onResult} {regenerate} />
-{:else if question.type === "MultipleChoiceQuestion"}
-  <ExerciseMultipleChoice {question} permalink={question.path} {onResult} {regenerate} />
-{:else if question.type === "FreeTextQuestion"}
-  <ExerciseTextInput {question} permalink={question.path} {onResult} {regenerate} />
-{:else if question.type === "MultiFreeTextQuestion"}
-  <ExerciseMultiTextInput {question} permalink={question.path} {onResult} {regenerate} />
-{:else}
-  <b>Unsupported question type.</b>
-{/if}
+{#key question.path}
+  {#if question.type === "MatchingQuestion"}
+    <ExerciseMatching {question} permalink={question.path} {onResult} {regenerate} />
+  {:else if question.type === "MultipleChoiceQuestion"}
+    <ExerciseMultipleChoice {question} permalink={question.path} {onResult} {regenerate} />
+  {:else if question.type === "FreeTextQuestion"}
+    <ExerciseTextInput {question} permalink={question.path} {onResult} {regenerate} />
+  {:else if question.type === "MultiFreeTextQuestion"}
+    <ExerciseMultiTextInput {question} permalink={question.path} {onResult} {regenerate} />
+  {:else}
+    <b>Unsupported question type.</b>
+  {/if}
+{/key}

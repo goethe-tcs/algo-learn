@@ -8,15 +8,19 @@
   interface Props {
     table: TableNode
   }
-  const { table }: Props = $props()
-  const { header, vLines, hLines, alignment } = table.format
-  const headerRow = header ? table.content[0] : undefined
-  const bodyRows = header ? table.content.slice(1) : table.content
-  const hasZebra = bodyRows.length >= 5
+  const props: Props = $props()
+  const table = $derived(props.table)
+  const header = $derived(table.format.header)
+  const vLines = $derived(table.format.vLines)
+  const hLines = $derived(table.format.hLines)
+  const alignment = $derived(table.format.alignment)
+  const headerRow = $derived(header ? table.content[0] : undefined)
+  const bodyRows = $derived(header ? table.content.slice(1) : table.content)
+  const hasZebra = $derived(bodyRows.length >= 5)
 </script>
 
 <div class={`${isMobileOrTablet ? "overflow-x-scroll" : ""}`}>
-  <table class="my-5 w-auto border-collapse">
+  <table class="text-foreground bg-background my-5 w-auto border-collapse rounded-sm">
     {#if headerRow}
       <thead
         class="[&_tr:first-child_>_th:first-child]:rounded-tl-sm [&_tr:first-child_>_th:last-child]:rounded-tr-sm"
@@ -36,10 +40,7 @@
       </thead>
     {/if}
     <tbody
-      class={cn(
-        hasZebra &&
-          "[&>tr:nth-child(even)>td]:bg-muted [&>tr:nth-child(even)>td:first-child]:rounded-l-sm [&>tr:nth-child(even)>td:last-child]:rounded-r-sm",
-      )}
+      class={cn(hasZebra && "[&>tr:nth-child(even)>td]:bg-muted [&>tr:nth-child(odd)>td]:bg-background")}
     >
       {#each bodyRows as row, i (i)}
         <tr>

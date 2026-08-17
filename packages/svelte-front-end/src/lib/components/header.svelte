@@ -1,9 +1,8 @@
 <script lang="ts">
   import { resolve } from "$app/paths"
   import { getLanguage, toggleLanguage } from "$lib/utils/langState.svelte.ts"
-  import { Moon, Sun, Volume2, VolumeX } from "@lucide/svelte"
+  import { Moon, Sun } from "@lucide/svelte"
   import type { Language } from "@shared/api/Language"
-  import { getMuted, toggleMuted } from "../sound.svelte.js"
   import { derivedTheme, toggleTheme } from "../theme.svelte.js"
   import FeedbackDialog from "./feedbackDialog.svelte"
   import SealLogo from "./logo/seal-logo-text-horizontal-white.svg"
@@ -18,7 +17,6 @@
   {@render logo()}
   <div class="grow"></div>
   {@render switchTheme()}
-  {@render soundSwitch()}
   {@render switchLang()}
   <FeedbackDialog />
 </header>
@@ -26,38 +24,6 @@
 {#snippet logo()}
   <Button variant="ghost" href={resolve("/")} class="flex items-center gap-2 px-2 text-3xl font-thin">
     <img src={SealLogo} alt="Logo" class="h-10" />
-  </Button>
-{/snippet}
-
-{#snippet soundSwitch()}
-  <Button
-    variant="ghost"
-    size="icon"
-    onclick={toggleMuted}
-    aria-label={getMuted() ? "Unmute" : "Mute"}
-    class="relative overflow-hidden"
-  >
-    <!-- Sound On Icon -->
-    <div
-      class="absolute inset-0 flex items-center justify-center transition-all duration-200"
-      class:opacity-0={getMuted()}
-      class:scale-75={getMuted()}
-      class:opacity-100={!getMuted()}
-      class:scale-100={!getMuted()}
-    >
-      <Volume2 class="h-5 w-5 transition-transform duration-200" />
-    </div>
-
-    <!-- Sound Off Icon -->
-    <div
-      class="absolute inset-0 flex items-center justify-center transition-all duration-200"
-      class:opacity-100={getMuted()}
-      class:scale-100={getMuted()}
-      class:opacity-0={!getMuted()}
-      class:scale-75={!getMuted()}
-    >
-      <VolumeX class="h-5 w-5 transition-transform duration-200" />
-    </div>
   </Button>
 {/snippet}
 

@@ -1,4 +1,4 @@
-import { RootedTree } from "@shared/utils/graph.ts"
+import { RootedTree } from "@shared/utils/graph"
 import { mdInputField, mdTableFromData } from "../markdownTools.ts"
 import type Random from "../random.ts"
 import type { DisjunctionTerms } from "./resolution.ts"

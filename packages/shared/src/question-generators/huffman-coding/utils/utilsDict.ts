@@ -50,19 +50,18 @@ export function generateDictFoundations({
  */
 function createInputFields(characterFrequencies: { [p: string]: number }) {
   let inputFields = ""
-  const fieldIDCharMap: { [key: string]: string } = {}
-  // iterate through the wordArray to create the input fields
   let i = 0
   for (const key in characterFrequencies) {
-    const fieldID = `index-${i}-${key}` // this is the unique ID for the input field
-    fieldIDCharMap[fieldID] = key
+    const fieldID = `index-${i}-${key}`
     inputFields += "|{{" + fieldID + "#TL#" + key + ": ##overlay}}"
-    if (i % 2 == 1) {
+    if (i % 2 === 1) {
       inputFields += "|\n"
     }
     i++
   }
-  inputFields += "|\n|#border_none?table_w-full#||"
+  if (i % 2 === 1) {
+    inputFields += "| |\n"
+  }
   return inputFields
 }
 

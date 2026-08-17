@@ -4,7 +4,6 @@
   import InteractWithQuestion from "$lib/components/InteractWithQuestion.svelte"
   import Markdown from "$lib/components/markdown/markdown.svelte"
   import type { MODE, Result } from "$lib/components/types.ts"
-  import { playSound } from "$lib/sound.svelte.ts"
   import { globalTranslations } from "$lib/translation.ts"
   import { getLanguage } from "$lib/utils/langState.svelte"
   import type { Language } from "@shared/api/Language"
@@ -28,8 +27,14 @@
     choice: number[]
     feedbackObject?: MatchingFeedback
   } = $state({
-    mode: question.fillOutAll ? "invalid" : "draft",
-    choice: Array(question.answers.length).fill(-1),
+    mode: "invalid",
+    choice: [],
+  })
+
+  $effect(() => {
+    questionState.mode = question.fillOutAll ? "invalid" : "draft"
+    questionState.choice = Array(question.answers.length).fill(-1)
+    questionState.feedbackObject = undefined
   })
 
   const disabled = $derived(questionState.mode === "correct" || questionState.mode === "incorrect")
@@ -50,7 +55,6 @@
       void Promise.resolve(question.feedback({ choice: questionState.choice })).then(
         (feedbackObject) => {
           const mode: MODE = feedbackObject.correct ? "correct" : "incorrect"
-          playSound(mode === "correct" ? "pass" : "fail")
           questionState.feedbackObject = feedbackObject
           questionState.mode = mode
         },
@@ -73,6 +77,33 @@
       handleClick(false)
     }
   }
+
+  $effect(() => {
+    void lang
+    if (question.feedback === undefined) return
+    if (questionState.mode !== "correct" && questionState.mode !== "incorrect") return
+    const choiceSnapshot = questionState.choice.slice()
+    void Promise.resolve(question.feedback({ choice: choiceSnapshot })).then((feedbackObject) => {
+      if (questionState.mode !== "correct" && questionState.mode !== "incorrect") return
+      questionState.feedbackObject = feedbackObject
+    })
+  })
+
+  const pairs = $derived(
+    (question.fixedItems ?? []).map((f, i) => ({
+      id: `${i}`,
+      fixed: f,
+      answerId: questionState.choice[i] >= 0 ? `${questionState.choice[i]}` : null,
+      correctness: questionState.feedbackObject?.rowCorrectness?.[i] ?? null,
+    })),
+  )
+
+  const answers = $derived(
+    question.answers.map((a, i) => ({
+      id: `${i}`,
+      content: a,
+    })),
+  )
 </script>
 
 <InteractWithQuestion
@@ -88,16 +119,8 @@
 
   <div class="my-5">
     <MatchingExercise
-      pairs={(question.fixedItems ?? []).map((f, i) => ({
-        id: `${i}`,
-        fixed: f,
-        answerId: questionState.choice[i] >= 0 ? `${questionState.choice[i]}` : null,
-        correctness: questionState.feedbackObject?.rowCorrectness?.[i] ?? null,
-      }))}
-      answers={question.answers.map((a, i) => ({
-        id: `${i}`,
-        content: a,
-      }))}
+      {pairs}
+      {answers}
       {disabled}
       {onChange}
       {onModeChange}

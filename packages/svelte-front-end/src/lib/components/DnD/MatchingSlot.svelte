@@ -1,5 +1,6 @@
 <script lang="ts">
   import Markdown from "$lib/components/markdown/markdown.svelte"
+  import { untrack } from "svelte"
   import { useDraggable, useDroppable } from "@dnd-kit-svelte/core"
 
   export interface SlotItem {
@@ -17,8 +18,8 @@
 
   const { id, item, onRemove, disabled = false, correctness = null }: Props = $props()
 
-  const drop = useDroppable({ id })
-  const drag = useDraggable({ id: `${id}-drag` })
+  const drop = untrack(() => useDroppable({ id }))
+  const drag = untrack(() => useDraggable({ id: `${id}-drag` }))
 
   const dragStyle = $derived(
     drag.transform.current

@@ -1,4 +1,5 @@
 import { inputRegex } from "@shared/utils/parseMarkdown.ts"
+import type { FeedbackVariation } from "../components/types"
 
 /**
  * Extracts the input fields from the text.
@@ -10,7 +11,7 @@ export function getInputFields(text: string): {
   inputTypes: string[]
   inputPrompts: string[]
   inputPlaceholders: string[]
-  inputFeedbackVariations: string[]
+  inputFeedbackVariations: FeedbackVariation[]
 } {
   // add the g flag, because String.prototype.matchAll argument must not be a non-global regular expression
   const regex = new RegExp(inputRegex.source, "g")
@@ -45,13 +46,13 @@ export function getInputFieldValues(inputFields: string[]): {
   inputTypes: string[]
   inputPrompts: string[]
   inputPlaceholders: string[]
-  inputFeedbackVariations: string[]
+  inputFeedbackVariations: FeedbackVariation[]
 } {
   const inputIds: string[] = []
   const inputTypes: string[] = []
   const inputPrompts: string[] = []
   const inputPlaceholders: string[] = []
-  const inputFeedbackVariations: string[] = []
+  const inputFeedbackVariations: FeedbackVariation[] = []
 
   for (const inputField of inputFields) {
     const inputFieldSplit = inputField.split("#")
@@ -59,7 +60,7 @@ export function getInputFieldValues(inputFields: string[]): {
     inputTypes.push(inputFieldSplit[1])
     inputPrompts.push(inputFieldSplit[2])
     inputPlaceholders.push(inputFieldSplit[3])
-    inputFeedbackVariations.push(inputFieldSplit[4])
+    inputFeedbackVariations.push("overlay") // todo remove inputFeedbackVariation
   }
 
   return { inputIds, inputTypes, inputPrompts, inputPlaceholders, inputFeedbackVariations }

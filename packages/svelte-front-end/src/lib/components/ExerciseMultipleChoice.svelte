@@ -5,7 +5,6 @@
   import type { MODE, Result } from "$lib/components/types.ts"
   import { Checkbox } from "$lib/components/ui/checkbox"
   import { Label } from "$lib/components/ui/label"
-  import { playSound } from "$lib/sound.svelte.ts"
   import { globalTranslations } from "$lib/translation.ts"
   import { getLanguage } from "$lib/utils/langState.svelte.ts"
   import { Tooltip } from "bits-ui"
@@ -30,12 +29,18 @@
     choice: Array<number>
     feedbackObject?: MultipleChoiceFeedback
   } = $state({
-    mode: question.sorting ? "draft" : "invalid",
-    choice: question.sorting ? [...Array(question.answers.length).keys()] : [],
+    mode: "invalid",
+    choice: [],
   })
   const disabled: boolean = $derived(
     questionState.mode === "correct" || questionState.mode === "incorrect",
   )
+
+  $effect(() => {
+    questionState.mode = question.sorting ? "draft" : "invalid"
+    questionState.choice = question.sorting ? [...Array(question.answers.length).keys()] : []
+    questionState.feedbackObject = undefined
+  })
 
   /**
    * SetChoice sets the entire choice array.
@@ -69,10 +74,8 @@
           (feedbackObject) => {
             let mode: MODE = "draft"
             if (feedbackObject.correct === true) {
-              playSound("pass")
               mode = "correct"
             } else if (feedbackObject.correct === false) {
-              playSound("fail")
               mode = "incorrect"
             }
             questionState.mode = mode
@@ -123,6 +126,17 @@
     }),
   )
   const onChange = (newItems: Array<Item>) => setChoice(newItems.map((item) => item.position))
+
+  $effect(() => {
+    void lang
+    if (question.feedback === undefined) return
+    if (questionState.mode !== "correct" && questionState.mode !== "incorrect") return
+    const choiceSnapshot = questionState.choice.slice()
+    void Promise.resolve(question.feedback({ choice: choiceSnapshot })).then((feedbackObject) => {
+      if (questionState.mode !== "correct" && questionState.mode !== "incorrect") return
+      questionState.feedbackObject = feedbackObject
+    })
+  })
 </script>
 
 {#if !question.sorting}

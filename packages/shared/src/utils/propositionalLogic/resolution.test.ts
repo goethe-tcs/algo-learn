@@ -3,9 +3,9 @@ import {
   generateRandomContradiction,
   generateRandomExpression,
   Literal,
-} from "@shared/utils/propositionalLogic/propositionalLogic.ts"
-import { getDisjunctionTerms, literalListsEqual } from "@shared/utils/propositionalLogic/resolution.ts"
-import Random, { sampleRandomSeed } from "@shared/utils/random.ts"
+} from "@shared/utils/propositionalLogic/propositionalLogic"
+import { getDisjunctionTerms, literalListsEqual } from "@shared/utils/propositionalLogic/resolution"
+import Random, { sampleRandomSeed } from "@shared/utils/random"
 
 describe("Resolution", () => {
   const AT = new Literal("A")
