@@ -28,8 +28,14 @@
 <AlertDialog.Root bind:open={alertOpen}>
   <AlertDialog.Trigger>
     {#snippet child({ props })}
-      <Button variant="ghost" size="icon" {...props}>
-        <MessageSquareText class="h-4 w-4" />
+      <Button
+        variant="ghost"
+        size="icon"
+        class="focus-visible:ring-goethe-foreground/70"
+        {...props}
+        aria-label={t("About.giveFeedback")}
+      >
+        <MessageSquareText class="size-4" />
       </Button>
     {/snippet}
   </AlertDialog.Trigger>

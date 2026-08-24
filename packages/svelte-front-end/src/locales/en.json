@@ -39,6 +39,7 @@
   "About.text": "This application helps you practice some of the skills that are relevant for the exam of a typical algorithms and data structures course. The site is supposed to be both useful and fun!",
   "About.mail.feedback.Subject": "Feedback on the SEAL platform",
   "About.mail.feedback.Body": "Hello,%0D%0A%0D%0A I have the following feedback/improvement on the SEAL platform: %0D%0A%0D%0A",
+  "About.giveFeedback": "Give feedback",
   "About.valueFeedback": "We Value Your Feedback!",
   "About.suggestImprovement": "Suggest improvements",
   "About.suggestImprovement.text": "Have an idea for enhancing our platform? Tell us if you’d like additional question types, new problem formats, or features to enrich your experience!",

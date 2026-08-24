@@ -39,6 +39,7 @@
   "About.text": "Diese Anwendung hilft dir dabei, einige Klausurrelevante Fähigkeiten für Algorithmen und Datenstrukturen zu üben. Das Lernen soll natürlich trotzdem Spaß machen.",
   "About.mail.feedback.Subject": "Feedback zu der SEAL Plattform",
   "About.mail.feedback.Body": "Hallo,%0D%0A%0D%0A ich habe folgendes Feedback bzw. folgenden Verbesserungsvorschlag für die SEAL Plattform: %0D%0A%0D%0A",
+  "About.giveFeedback": "Feedback geben",
   "About.valueFeedback": "Wir schätzen dein Feedback!",
   "About.suggestImprovement": "Verbesserungen vorschlagen",
   "About.suggestImprovement.text": "Hast du eine Idee zur Verbesserung unserer Plattform? Sag uns gerne, ob du zusätzliche Fragetypen, neue Problemformate oder Funktionen wünschst, um dein Erlebnis zu verbessern!",
