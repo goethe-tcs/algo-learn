@@ -33,51 +33,45 @@
       </Button>
     {/snippet}
   </AlertDialog.Trigger>
-  <AlertDialog.Portal>
-    <AlertDialog.Overlay>
-      <AlertDialog.Content class="min-w-fit">
-        <AlertDialog.Header>
-          <AlertDialog.Title>{t("About.valueFeedback")}</AlertDialog.Title>
-          <AlertDialog.Description>
-            <div class="flex flex-col space-y-4">
-              <Card.Root class="w-full cursor-pointer" onclick={openMail}>
-                <Card.Header>
-                  <Card.Title>
-                    <Mail class="mr-2 inline w-6 align-middle" />
-                    {t("About.suggestImprovement")}
-                  </Card.Title>
-                </Card.Header>
-                <Card.Content>{t("About.suggestImprovement.text")}</Card.Content>
-              </Card.Root>
-              <Card.Root class="w-full cursor-pointer" onclick={openGithubIssue}>
-                <Card.Header>
-                  <Card.Title>
-                    <div class="mr-2 inline-block w-6 align-middle"><Github /></div>
-                    {t("About.reportBug")}
-                  </Card.Title>
-                </Card.Header>
-                <Card.Content>{t("About.reportBug.text")}</Card.Content>
-                <Card.Footer>
-                  <div class="text-sm text-gray-400">{t("About.reportBug.unsure")}</div>
-                </Card.Footer>
-              </Card.Root>
-            </div>
-          </AlertDialog.Description>
-        </AlertDialog.Header>
-        <AlertDialog.Footer>
-          <AlertDialog.Action class="flex items-center" onclick={openMail}>
-            <Mail class="mr-2 w-2" />
-            {t("About.contactMail")}
-          </AlertDialog.Action>
-          <AlertDialog.Action class="flex items-center" onclick={openGithubIssue}>
-            <div class="mr-2 w-2"><Github /></div>
-            {t("About.openIssue")}
-          </AlertDialog.Action>
-          <AlertDialog.Cancel class="m-1" onclick={() => (alertOpen = false)}>
-            {t("About.cancel")}
-          </AlertDialog.Cancel>
-        </AlertDialog.Footer>
-      </AlertDialog.Content>
-    </AlertDialog.Overlay>
-  </AlertDialog.Portal>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{t("About.valueFeedback")}</AlertDialog.Title>
+      <AlertDialog.Description class="flex flex-col gap-3 text-left">
+        <Card.Root class="w-full cursor-pointer gap-2 py-4" onclick={openMail}>
+          <Card.Header>
+            <Card.Title class="flex items-center gap-2 text-base">
+              <Mail class="size-5 shrink-0" />
+              {t("About.suggestImprovement")}
+            </Card.Title>
+          </Card.Header>
+          <Card.Content class="text-muted-foreground">
+            {t("About.suggestImprovement.text")}
+          </Card.Content>
+        </Card.Root>
+        <Card.Root class="w-full cursor-pointer gap-2 py-4" onclick={openGithubIssue}>
+          <Card.Header>
+            <Card.Title class="flex items-center gap-2 text-base">
+              <span class="flex shrink-0"><Github size={20} /></span>
+              {t("About.reportBug")}
+            </Card.Title>
+          </Card.Header>
+          <Card.Content class="text-muted-foreground">{t("About.reportBug.text")}</Card.Content>
+          <Card.Footer class="text-muted-foreground text-xs">{t("About.reportBug.unsure")}</Card.Footer>
+        </Card.Root>
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer class="sm:flex-wrap">
+      <AlertDialog.Cancel onclick={() => (alertOpen = false)}>
+        {t("About.cancel")}
+      </AlertDialog.Cancel>
+      <AlertDialog.Action onclick={openMail}>
+        <Mail />
+        {t("About.contactMail")}
+      </AlertDialog.Action>
+      <AlertDialog.Action onclick={openGithubIssue}>
+        <Github size={16} />
+        {t("About.openIssue")}
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
 </AlertDialog.Root>
