@@ -13,6 +13,8 @@
   const lang: Language = $derived(getLanguage())
   const { t } = $derived(tFunction(globalTranslations, lang))
   let alertOpen = $state(false)
+  /** Whether the dialog was opened by pointer, in which case closing it must not show a focus ring. */
+  let openedWithPointer = false
 
   const openMail = () => {
     const SEALMAIL = "seal@ae.cs.uni-frankfurt.de"
@@ -33,13 +35,21 @@
         size="icon"
         class="focus-visible:ring-goethe-foreground/70"
         {...props}
+        onpointerdown={() => (openedWithPointer = true)}
         aria-label={t("About.giveFeedback")}
       >
         <MessageSquareText class="size-4" />
       </Button>
     {/snippet}
   </AlertDialog.Trigger>
-  <AlertDialog.Content>
+  <AlertDialog.Content
+    onCloseAutoFocus={(e) => {
+      // Returning focus to the trigger would leave a focus ring on it, even though the dialog was
+      // opened by pointer. Keyboard-opened dialogs keep the default behaviour.
+      if (openedWithPointer) e.preventDefault()
+      openedWithPointer = false
+    }}
+  >
     <AlertDialog.Header>
       <AlertDialog.Title>{t("About.valueFeedback")}</AlertDialog.Title>
       <AlertDialog.Description class="flex flex-col gap-3 text-left">
