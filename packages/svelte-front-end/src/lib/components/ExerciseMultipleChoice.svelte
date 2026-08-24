@@ -241,20 +241,26 @@
   userGaveCorrectAnswer: boolean,
   hidden: boolean,
 )}
-  <Tooltip.Provider>
-    <Tooltip.Root>
-      <Tooltip.Trigger>
-        {@render FeedbackIcon(isCorrectAnswer, hidden)}
-      </Tooltip.Trigger>
-      <Tooltip.Content>
-        {#if questionState.mode === "correct" || questionState.mode === "incorrect"}
-          {isCorrectAnswer ? t("answer.correct") : t("answer.wrong")}
-          <br />
-          {userGaveCorrectAnswer ? t("choice.correct") : t("choice.wrong")}
-        {/if}
-      </Tooltip.Content>
-    </Tooltip.Root>
-  </Tooltip.Provider>
+  {#if hidden}
+    {@render FeedbackIcon(isCorrectAnswer, true)}
+  {:else}
+    <Tooltip.Provider disableHoverableContent delayDuration={0}>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          {#snippet child({ props: { type: _type, tabindex: _tabindex, ...props } })}
+            <span {...props}>
+              {@render FeedbackIcon(isCorrectAnswer, false)}
+            </span>
+          {/snippet}
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          {#if questionState.mode === "correct" || questionState.mode === "incorrect"}
+            {userGaveCorrectAnswer ? t("choice.correct") : t("choice.wrong")}
+          {/if}
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  {/if}
 {/snippet}
 
 {#snippet FeedbackIcon(correct: boolean, hidden: boolean)}
