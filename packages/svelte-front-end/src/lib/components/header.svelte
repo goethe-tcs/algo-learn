@@ -50,7 +50,7 @@
   <Button
     variant="ghost"
     href={resolve("/")}
-    class="focus-visible:ring-goethe-foreground/70 flex items-center gap-2 px-2"
+    class="focus-visible:ring-goethe-foreground/70 flex h-auto items-center gap-2 p-1"
   >
     <img src={SealLogo} alt="Logo" class="h-10" />
   </Button>
