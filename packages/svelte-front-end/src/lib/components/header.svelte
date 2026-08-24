@@ -1,6 +1,10 @@
 <script lang="ts">
-  import { resolve } from "$app/paths"
-  import { getLanguage, toggleLanguage } from "$lib/utils/langState.svelte.ts"
+  import { goto } from "$app/navigation"
+  import { base, resolve } from "$app/paths"
+  import { page } from "$app/state"
+  import type { Pathname } from "$app/types"
+  import { nextLang, pathnameInLanguage } from "$lib/translation.ts"
+  import { getLanguage } from "$lib/utils/langState.svelte.ts"
   import { Moon, Sun } from "@lucide/svelte"
   import type { Language } from "@shared/api/Language"
   import { derivedTheme, toggleTheme } from "../theme.svelte.js"
@@ -9,6 +13,13 @@
   import Button from "./ui/button/button.svelte"
 
   const lang: Language = $derived(getLanguage())
+
+  /** Navigate to the current page in the next language, so the URL reflects the choice. */
+  function toggleLanguage() {
+    // `page.url.pathname` includes the base path, which `resolve` adds back.
+    const pathname = pathnameInLanguage(nextLang(lang), page.url.pathname.slice(base.length))
+    void goto(resolve(pathname as Pathname))
+  }
 </script>
 
 <header

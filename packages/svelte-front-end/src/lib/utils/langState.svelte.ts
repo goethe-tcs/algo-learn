@@ -7,19 +7,6 @@ export function setLanguage(lang: Language) {
   langStateSvelte["lang"] = lang
 }
 
-/**
- * The `toggleLanguage` function toggles the language between "en" and "de".
- *
- * **Only works as long as there are only two supported languages.**
- */
-export function toggleLanguage() {
-  if (langStateSvelte.lang === "en") {
-    langStateSvelte["lang"] = "de"
-  } else {
-    langStateSvelte["lang"] = "en"
-  }
-}
-
 export function getLanguage(): Language {
   return langStateSvelte.lang
 }
