@@ -5,6 +5,7 @@
   import { CheckCheck, ListFilterPlus } from "@lucide/svelte"
   import { allQuestionTopics, topicNames, type QuestionTopic } from "@settings/questionsSelection.js"
   import type { Language } from "@shared/api/Language.ts"
+  import type { SingleTranslation } from "@shared/utils/translations.ts"
 
   interface Props {
     selectedTopic?: QuestionTopic | "all"
@@ -17,6 +18,13 @@
   }: Props = $props()
 
   const lang: Language = $derived(getLanguage())
+
+  const allLang: SingleTranslation = { en: "All", de: "Alle" }
+  const sortByLang: SingleTranslation = { en: "Sort by:", de: "Sortieren nach:" }
+  const sortOptionLang: Record<"Name" | "Default", SingleTranslation> = {
+    Name: { en: "Name", de: "Name" },
+    Default: { en: "Default", de: "Standard" },
+  }
 </script>
 
 <div class="mb-6 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
@@ -28,7 +36,7 @@
         ? 'border-slate-800 bg-slate-800 text-white dark:border-slate-300 dark:bg-slate-300 dark:text-gray-900'
         : 'border-gray-300 text-gray-500 hover:border-black hover:text-black dark:border-gray-700 dark:text-gray-400 dark:hover:border-white dark:hover:text-white'}"
     >
-      All
+      {allLang[lang]}
     </button>
 
     {#each allQuestionTopics as topic (topic)}
@@ -60,7 +68,9 @@
         class="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm transition hover:bg-gray-50 sm:w-auto sm:justify-start
            dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
       >
-        <ListFilterPlus class="h-4 w-4" /> Sort by: <span class="font-medium">{sortBy}</span>
+        <ListFilterPlus class="h-4 w-4" />
+        {sortByLang[lang]}
+        <span class="font-medium">{sortOptionLang[sortBy][lang]}</span>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content class="rounded-md bg-white p-1 shadow-md dark:bg-gray-800">
@@ -68,7 +78,7 @@
           class="flex items-center justify-between rounded-md px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700"
           onclick={() => (sortBy = "Name")}
         >
-          Name
+          {sortOptionLang.Name[lang]}
           {#if sortBy === "Name"}
             <CheckCheck />
           {/if}
@@ -78,7 +88,7 @@
           class="flex items-center justify-between rounded-md px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700"
           onclick={() => (sortBy = "Default")}
         >
-          Default
+          {sortOptionLang.Default[lang]}
           {#if sortBy === "Default"}
             <CheckCheck />
           {/if}
