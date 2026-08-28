@@ -1,7 +1,7 @@
-import type { Language } from "../../../api/Language.ts"
-import { createArrayDisplayCodeBlock } from "../../../utils/arrayDisplayCodeBlock.ts"
-import type Random from "../../../utils/random.ts"
-import type { QuickFind } from "./quickFindAlgorithm.ts"
+import type { Language } from "@shared/api/Language.ts"
+import type { UnionFind } from "@shared/question-generators/unionFind/unionFind.ts"
+import { createArrayDisplayCodeBlock } from "@shared/utils/arrayDisplayCodeBlock.ts"
+import type Random from "@shared/utils/random.ts"
 
 /**
  * This function performs additional union operations outside the block/blocks
@@ -21,7 +21,7 @@ function performAdditionalUnionOperation({
   otherOperations,
 }: {
   random: Random
-  union: QuickFind
+  union: UnionFind
   unionSize: number
   usedElements: number[]
   otherOperations: number
@@ -41,16 +41,21 @@ function performAdditionalUnionOperation({
 
 /**
  * This will find a value outside a block and combine it with a value inside the block
+ * @param random - random class object
+ * @param union - union object
+ * @param blockValues - values of the block where the value should be found
+ * @param unionSize - size of the union (this indicates the possible values outside the block)
+ * @param lang
  */
 function findAndPerformUnionOperation(
   random: Random,
-  lang: Language,
-  union: QuickFind,
+  union: UnionFind,
   blockValues: number[],
   unionSize: number,
+  lang: Language,
 ) {
   const gapField = createArrayDisplayCodeBlock({
-    array: union.getArray(),
+    array: union.getArray()[0],
     lang,
   })
 
@@ -62,7 +67,7 @@ function findAndPerformUnionOperation(
   )
 
   // compute the final union after combining one more element
-  union.union(gapOperationValues[0], gapOperationValues[1])
+  union.union(gapOperationValues[0], gapOperationValues[1], true)
 
   return { gapField, gapOperationValues }
 }
@@ -84,7 +89,7 @@ function generateTwoBlocks({
   otherOperation = true,
 }: {
   random: Random
-  union: QuickFind
+  union: UnionFind
   unionSize: number
   otherOperation?: true | false
 }) {
@@ -143,7 +148,7 @@ function generateOneBlock({
   otherOperations = 1,
 }: {
   random: Random
-  union: QuickFind
+  union: UnionFind
   unionSize: number
   otherOperations?: number
 }) {
@@ -175,33 +180,55 @@ function generateOneBlock({
   return { block1Values, union }
 }
 
-type UnionOperationType = {
-  random: Random
-  lang: Language
-  union: QuickFind
-  unionSize: number
-}
-
 /**
  * This will generate a question with two bigger unions
  * And as next operation to combine one element inside one of the blocks
  * with one element outside the blocks
+ * @param random - random class object
+ * @param union - union object
+ * @param unionSize - size of the union
+ * @param lang
  */
-export function unionTwoBlocksCombineOne({ random, lang, union, unionSize }: UnionOperationType) {
+export function unionTwoBlocksCombineOne({
+  random,
+  union,
+  unionSize,
+  lang,
+}: {
+  random: Random
+  union: UnionFind
+  unionSize: number
+  lang: Language
+}) {
   const { block1Values, union: updatedUnion } = generateTwoBlocks({
     random,
     union,
     unionSize,
   })
 
-  return findAndPerformUnionOperation(random, lang, updatedUnion, block1Values, unionSize)
+  return findAndPerformUnionOperation(random, updatedUnion, block1Values, unionSize, lang)
 }
 
 /**
  * Generates two bigger unions
  * And as the next operation, combine the two elements inside neither of those
+ *
+ * @param random
+ * @param union
+ * @param unionSize
+ * @param lang
  */
-export function unionTwoBlocksCombineNone({ random, lang, union, unionSize }: UnionOperationType) {
+export function unionTwoBlocksCombineNone({
+  random,
+  union,
+  unionSize,
+  lang,
+}: {
+  random: Random
+  union: UnionFind
+  unionSize: number
+  lang: Language
+}) {
   let block1Values: number[] = []
   let block2Values: number[] = []
 
@@ -216,7 +243,7 @@ export function unionTwoBlocksCombineNone({ random, lang, union, unionSize }: Un
   // The loop ensures there's at least one element outside the two blocks
 
   const gapField = createArrayDisplayCodeBlock({
-    array: union.getArray(),
+    array: union.getArray()[0],
     lang,
   })
 
@@ -229,7 +256,7 @@ export function unionTwoBlocksCombineNone({ random, lang, union, unionSize }: Un
   )
 
   // Perform the final union operation
-  union.union(gapOperationValues[0], gapOperationValues[1])
+  union.union(gapOperationValues[0], gapOperationValues[1], true)
 
   return { gapField, gapOperationValues }
 }
@@ -237,20 +264,34 @@ export function unionTwoBlocksCombineNone({ random, lang, union, unionSize }: Un
 /**
  * This just creates twoBlocks
  * Next operation is to combine two elements inside the same block
+ * @param random
+ * @param union
+ * @param unionSize
+ * @param lang
  */
-export function unionTwoBlocksCombineSame({ random, lang, union, unionSize }: UnionOperationType) {
+export function unionTwoBlocksCombineSame({
+  random,
+  union,
+  unionSize,
+  lang,
+}: {
+  random: Random
+  union: UnionFind
+  unionSize: number
+  lang: Language
+}) {
   const { block1Values, union: union_ } = generateTwoBlocks({ random, union, unionSize })
   union = union_
 
   const gapField = createArrayDisplayCodeBlock({
-    array: union.getArray(),
+    array: union.getArray()[0],
     lang,
   })
 
   const gapOperationValues: number[] = random.subset(block1Values, 2)
 
   // compute the final union
-  union.union(gapOperationValues[0], gapOperationValues[1])
+  union.union(gapOperationValues[0], gapOperationValues[1], true)
 
   return {
     gapField,
@@ -262,8 +303,22 @@ export function unionTwoBlocksCombineSame({ random, lang, union, unionSize }: Un
  * This will generate a question with one big block
  * And as next operation to combine one element inside the block
  * with one element outside the block
+ * @param random - random class object
+ * @param union - union object
+ * @param unionSize - size of the union
+ * @param lang
  */
-export function unionOneBlockCombineOne({ random, lang, union, unionSize }: UnionOperationType) {
+export function unionOneBlockCombineOne({
+  random,
+  union,
+  unionSize,
+  lang,
+}: {
+  random: Random
+  union: UnionFind
+  unionSize: number
+  lang: Language
+}) {
   const { block1Values, union: updatedUnion } = generateOneBlock({
     random,
     union,
@@ -271,14 +326,29 @@ export function unionOneBlockCombineOne({ random, lang, union, unionSize }: Unio
     otherOperations: random.int(0, 2), // if any other operation should be performed
   })
 
-  return findAndPerformUnionOperation(random, lang, updatedUnion, block1Values, unionSize)
+  return findAndPerformUnionOperation(random, updatedUnion, block1Values, unionSize, lang)
 }
 
 /**
  * This just creates one big block
  * And as next operation to combine two elements outside the big union
+ *
+ * @param random
+ * @param union
+ * @param unionSize
+ * @param lang
  */
-export function unionOneBlockCombineNone({ random, lang, union, unionSize }: UnionOperationType) {
+export function unionOneBlockCombineNone({
+  random,
+  union,
+  unionSize,
+  lang,
+}: {
+  random: Random
+  union: UnionFind
+  unionSize: number
+  lang: Language
+}) {
   const { block1Values, union: union_ } = generateOneBlock({
     random,
     union,
@@ -288,7 +358,7 @@ export function unionOneBlockCombineNone({ random, lang, union, unionSize }: Uni
   union = union_
 
   const gapField = createArrayDisplayCodeBlock({
-    array: union.getArray(),
+    array: union.getArray()[0],
     lang,
   })
 
@@ -298,7 +368,7 @@ export function unionOneBlockCombineNone({ random, lang, union, unionSize }: Uni
   )
 
   // compute the final union
-  union.union(gapOperationValues[0], gapOperationValues[1])
+  union.union(gapOperationValues[0], gapOperationValues[1], true)
 
   return {
     gapField,
