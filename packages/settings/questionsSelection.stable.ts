@@ -15,6 +15,7 @@ import { MinimalDFAStateCount } from "@shared/question-generators/automaton/stat
 import { DijkstraAlgorithm } from "@shared/question-generators/graph-algorithms/dijkstra"
 import { DijkstraTableGenerator } from "@shared/question-generators/graph-algorithms/dijkstraTable"
 import { TreeTraversal } from "@shared/question-generators/graph-algorithms/treeTraversal.ts"
+import { hashingGenerator } from "@shared/question-generators/Hashing/Hashing.ts"
 import { HeapNeighbours } from "@shared/question-generators/heap/generatorNeighbours.ts"
 import { HeapOperations } from "@shared/question-generators/heap/generatorOperations.ts"
 import { HeapVerifying } from "@shared/question-generators/heap/generatorVerify.ts"
@@ -96,6 +97,11 @@ export const collection: QuestionCollection = [
     name: { de: "Union-Find", en: "Union-Find" },
     topics: ["algorithms", "data-structures"],
     contents: [QuickFindGenerator],
+  },
+  {
+    slug: "hashing",
+    name: { de: "Hashing", en: "Hashing" },
+    contents: [hashingGenerator],
   },
   {
     slug: "huffmancoding",
