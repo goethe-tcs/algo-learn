@@ -29,3 +29,10 @@ export type TextFieldState = {
   feedback?: string // immediate feedback on the value of this field
   focus?: boolean // true if this is the first input field in the form
 }
+
+export type FormContextValue = {
+  textFieldStateValues: { [id: string]: TextFieldState }
+  addTextFieldAfterwards: (inputField: string) => void
+}
+
+export const ADD_TEXTFIELDS_AFTERWARDS = Symbol("addTextFieldAfterwards")

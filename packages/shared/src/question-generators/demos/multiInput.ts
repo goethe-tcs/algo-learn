@@ -33,7 +33,7 @@ export const DemoMultiInput: QuestionGenerator = {
   expectedParameters: [],
 
   /**
-   * Generates a new MultipleChoiceQuestion question.
+   * Generates a new MultiFreeText Question question.
    *
    * @param lang The language of the question
    * @param parameters The parameters for the question. In this case none are used.

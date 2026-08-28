@@ -1,9 +1,16 @@
 import type Random from "./random"
 
 type NodeId = number
-type NodeList = Node[]
-type EdgeList = Edge[][]
-type ClickEventType = "none" | "select" | "group"
+export type NodeList = Node[]
+export type EdgeList = Edge[][]
+export type ClickEventType = "none" | "select" | "group" | "selectupgrade" | "groupupgrade"
+
+export function nodeInputFieldID(idNum: number) {
+  return `node-field-${idNum}`
+}
+export function edgeInputFieldID(idNum: number) {
+  return `edge-field-${idNum}`
+}
 
 /**
  * A node in a graph.
@@ -35,12 +42,14 @@ export interface Edge {
  * A graph.
  * @property nodes - The nodes of the graph.
  * @property links - The links of the graph.
+ * @property inputFieldID - A unique ID for the input field associated with the graph.
  */
 export class Graph {
   nodes: NodeList
   edges: EdgeList
   weighted: boolean
   directed: boolean
+  public inputFieldID: number | null
   public nodeDraggable: boolean
   public nodeClickType: ClickEventType
   public edgeClickType: ClickEventType
@@ -53,16 +62,18 @@ export class Graph {
     edges: EdgeList,
     directed: boolean,
     weighted: boolean,
+    inputFieldID: number | null = null,
     nodeDraggable: boolean = false,
     nodeClick: ClickEventType = "none",
     edgeClick: ClickEventType = "none",
-    nodeGroupMax: number = 0,
-    edgeGroupMax: number = 0,
+    nodeGroupMax: number = 1,
+    edgeGroupMax: number = 1,
   ) {
     this.nodes = nodes
     this.edges = edges
     this.directed = directed
     this.weighted = weighted
+    this.inputFieldID = inputFieldID
     this.nodeDraggable = nodeDraggable
     this.nodeClickType = nodeClick
     this.edgeClickType = edgeClick
@@ -100,8 +111,14 @@ export class Graph {
   }
 
   public toString(): string {
-    const clickTypeMapping: Record<ClickEventType, string> = { none: "0", select: "1", group: "2" }
-    let graphStr = `${this.nodes.length} ${this.getNumEdges()} ${this.directed ? "1" : "0"} ${this.weighted ? "1" : "0"} ${this.nodeDraggable ? "1" : "0"} ${clickTypeMapping[this.nodeClickType]} ${clickTypeMapping[this.edgeClickType]} ${this.nodeGroupMax ?? "0"} ${this.edgeGroupMax ?? "0"}\n`
+    const clickTypeMapping: Record<ClickEventType, string> = {
+      none: "0",
+      select: "1",
+      group: "2",
+      selectupgrade: "3",
+      groupupgrade: "4",
+    }
+    let graphStr = `${this.nodes.length} ${this.getNumEdges()} ${this.directed ? "1" : "0"} ${this.weighted ? "1" : "0"} ${this.inputFieldID} ${this.nodeDraggable ? "1" : "0"} ${clickTypeMapping[this.nodeClickType]} ${clickTypeMapping[this.edgeClickType]} ${this.nodeGroupMax ?? "0"} ${this.edgeGroupMax ?? "0"}\n`
 
     for (const node of this.nodes) {
       graphStr += `${Math.round(node.coords.x * 100) / 100} ${Math.round(node.coords.y * 100) / 100} ${node.group ?? "-"} "${node.label ?? ""}"\n`
@@ -125,7 +142,7 @@ export class Graph {
   public static parse(graphStr: string): Graph {
     const lines = graphStr.split("\n")
     const graphMetaData = lines[0].match(
-      /^(\d+) (\d+) ([01]) ([01]) ([01]) ([012]) ([012]) (\d+) (\d+)$/,
+      /^(\d+) (\d+) ([01]) ([01]) (null|\d+) ([01]) ([01234]) ([01234]) (\d+) (\d+)$/,
     )
 
     if (graphMetaData === null) throw Error(`Input error: graph data has invalid meta data: ${lines[0]}`)
@@ -133,12 +150,22 @@ export class Graph {
     const numEdges = parseInt(graphMetaData[2])
     const directed = graphMetaData[3] === "1"
     const weighted = graphMetaData[4] === "1"
-    const nodeDraggable = graphMetaData[5] === "1"
-    const clickTypeMapping: Record<string, ClickEventType> = { "0": "none", "1": "select", "2": "group" }
-    const nodeClick = clickTypeMapping[graphMetaData[6]]
-    const edgeClick = clickTypeMapping[graphMetaData[7]]
-    const nodeGroupMax = parseInt(graphMetaData[8])
-    const edgeGroupMax = parseInt(graphMetaData[9])
+    const inputFieldID = graphMetaData[5] === "null" ? null : parseInt(graphMetaData[5])
+    if (inputFieldID === null && graphMetaData[5] !== "null") {
+      throw Error("Input error: invalid input field identifier")
+    }
+    const nodeDraggable = graphMetaData[6] === "1"
+    const clickTypeMapping: Record<string, ClickEventType> = {
+      "0": "none",
+      "1": "select",
+      "2": "group",
+      "3": "selectupgrade",
+      "4": "groupupgrade",
+    }
+    const nodeClick = clickTypeMapping[graphMetaData[7]]
+    const edgeClick = clickTypeMapping[graphMetaData[8]]
+    const nodeGroupMax = parseInt(graphMetaData[9])
+    const edgeGroupMax = parseInt(graphMetaData[10])
 
     if (lines.length < numNodes + numEdges + 1) throw Error("Input error: graph data is incomplete")
     if (nodeClick === undefined || edgeClick === undefined)
@@ -193,11 +220,27 @@ export class Graph {
       edges,
       directed,
       weighted,
+      inputFieldID,
       nodeDraggable,
       nodeClick,
       edgeClick,
       nodeGroupMax,
       edgeGroupMax,
+    )
+  }
+
+  public clone(): Graph {
+    return new Graph(
+      [...this.nodes],
+      [...this.edges],
+      this.directed,
+      this.weighted,
+      this.inputFieldID,
+      this.nodeDraggable,
+      this.nodeClickType,
+      this.edgeClickType,
+      this.nodeGroupMax,
+      this.edgeGroupMax,
     )
   }
 
@@ -247,14 +290,23 @@ export class Graph {
     if (!this.directed) this.getEdge(v, u).value = weight
   }
 
-  public setNodeGroup(u: NodeId, group: number): void {
-    if (group > this.nodeGroupMax - 1 || group < 0)
+  public setNodeGroup(u: NodeId, group: number | null): void {
+    if (group === null) {
+      this.nodes[u].group = null
+      return
+    }
+    if (group > this.nodeGroupMax || group < 0)
       throw Error("Input error: node group too large or negative")
     this.nodes[u].group = group
   }
 
-  public setEdgeGroup(u: NodeId, v: NodeId, group: number): void {
-    if (group > this.edgeGroupMax - 1 || group < 0)
+  public setEdgeGroup(u: NodeId, v: NodeId, group: number | null): void {
+    if (group === null) {
+      this.getEdge(u, v).group = null
+      if (!this.directed) this.getEdge(v, u).group = null
+      return
+    }
+    if (group > this.edgeGroupMax || group < 0)
       throw Error("Input error: edge group too large or negative")
     this.getEdge(u, v).group = group
     if (!this.directed) this.getEdge(v, u).group = group
@@ -274,22 +326,22 @@ export class Graph {
   }
 }
 
+/**
+ * Generates labels based on the index (0 -> A, 1 -> B, ..., 25 -> Z, 26 -> AA, 27 -> AB, ...)
+ * @param i
+ */
+export function getNodeLabel(i: number): string {
+  let label: string = ""
+  do {
+    const a = i % 26
+    i = (i - a) / 26
+    label = String.fromCharCode(65 + a) + label
+  } while (i > 0)
+
+  return label
+}
+
 export class RandomGraph {
-  /**
-   * Generates labels based on the index (0 -> A, 1 -> B, ..., 25 -> Z, 26 -> AA, 27 -> AB, ...)
-   * @param i
-   */
-  public static getLabel(i: number): string {
-    let label: string = ""
-    do {
-      const a = i % 26
-      i = (i - a) / 26
-      label = String.fromCharCode(65 + a) + label
-    } while (i > 0)
-
-    return label
-  }
-
   /**
    * Generates planar grid graphs in various shapes
    * @param random
@@ -338,7 +390,7 @@ export class RandomGraph {
         const nodeId: NodeId = posToNodeId(row, col)
         vertices.push({
           // id: nodeId,
-          label: RandomGraph.getLabel(nodeId),
+          label: getNodeLabel(nodeId),
           coords: {
             x: col * scale - xOffset + shakeup(),
             y: row * scale + shakeup(),
@@ -636,7 +688,7 @@ export class RootedTree {
     const numNodes = tree.getNumNodes()
     let labels = []
     for (let i = 0; i < numNodes; i++) {
-      labels.push(RandomGraph.getLabel(i))
+      labels.push(getNodeLabel(i))
     }
     labels = random.shuffle(labels)
 
@@ -909,7 +961,7 @@ export class KNMGraphGenerator {
     for (let i = 0; i < size; i++) {
       const angle = (2 * Math.PI * i) / size
       nodes.push({
-        label: RandomGraph.getLabel(i),
+        label: getNodeLabel(i),
         coords: { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius },
       })
     }
@@ -940,10 +992,10 @@ export class KNMGraphGenerator {
 
     // create partitions
     for (let i = 0; i < nodesInPartA; i++) {
-      nodes.push({ label: RandomGraph.getLabel(i), coords: { x: i * 2, y: -yOffset } })
+      nodes.push({ label: getNodeLabel(i), coords: { x: i * 2, y: -yOffset } })
     }
     for (let j = 0; j < nodesInPartB; j++) {
-      nodes.push({ label: RandomGraph.getLabel(nodesInPartA + j), coords: { x: j * 2, y: yOffset } })
+      nodes.push({ label: getNodeLabel(nodesInPartA + j), coords: { x: j * 2, y: yOffset } })
     }
 
     centerPartition(nodes.slice(0, nodesInPartA), nodesInPartA, nodesInPartA + nodesInPartB)
@@ -984,7 +1036,7 @@ export class CycleGraph {
     for (let i = 0; i < size; i++) {
       const angle = (2 * Math.PI * i) / size
       nodes.push({
-        label: RandomGraph.getLabel(i),
+        label: getNodeLabel(i),
         coords: {
           x: Math.cos(angle) * radius + shakeup(),
           y: Math.sin(angle) * radius + shakeup(),
@@ -1002,4 +1054,15 @@ export class CycleGraph {
 
     return new Graph(nodes, edges, directed, !!weights)
   }
+}
+
+/**
+ * Checks if two edges are the same (ignoring direction)
+ * @param a
+ * @param b
+ */
+export function isSameEdge(a: Edge, b: Edge): boolean {
+  return (
+    (a.source === b.source && a.target === b.target) || (a.source === b.target && a.target === b.source)
+  )
 }

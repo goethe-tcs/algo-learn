@@ -14,6 +14,12 @@ import { DFAMinimizationTable } from "@shared/question-generators/automaton/mini
 import { MinimalDFAStateCount } from "@shared/question-generators/automaton/stateCount"
 import { DijkstraAlgorithm } from "@shared/question-generators/graph-algorithms/dijkstra"
 import { DijkstraTableGenerator } from "@shared/question-generators/graph-algorithms/dijkstraTable"
+import { FindMinimalMST } from "@shared/question-generators/graph-algorithms/spanningtree/findMinimalMST.ts"
+import { KruskalCycle } from "@shared/question-generators/graph-algorithms/spanningtree/kruskalGen.ts"
+import { MSTGraphGen } from "@shared/question-generators/graph-algorithms/spanningtree/MSTGraph.ts"
+import { MSTWeightGen } from "@shared/question-generators/graph-algorithms/spanningtree/MSTWeight.ts"
+import { PrimOrder } from "@shared/question-generators/graph-algorithms/spanningtree/primGen.ts"
+import { UniqueMSTGen } from "@shared/question-generators/graph-algorithms/spanningtree/uniqueMST.ts"
 import { TreeTraversal } from "@shared/question-generators/graph-algorithms/treeTraversal.ts"
 import { HeapNeighbours } from "@shared/question-generators/heap/generatorNeighbours.ts"
 import { HeapOperations } from "@shared/question-generators/heap/generatorOperations.ts"
@@ -120,6 +126,12 @@ export const collection: QuestionCollection = [
     name: { de: "Lineare Algebra", en: "Linear Algebra" },
     topics: ["math"],
     contents: [Determinant, AxbGenerator],
+  },
+  {
+    slug: "spanning-trees",
+    name: { de: "Spannbäume", en: "Spanning Trees" },
+    topics: ["graph", "algorithms"],
+    contents: [MSTWeightGen, MSTGraphGen, KruskalCycle, PrimOrder, UniqueMSTGen, FindMinimalMST],
   },
   {
     slug: "automata",

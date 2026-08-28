@@ -76,6 +76,17 @@
       d={`M ${u.x} ${u.y} Q ${curveHandle!.x} ${curveHandle!.y}, ${v.x - 32 * arrowDirUnit!.x} ${v.y - 32 * arrowDirUnit!.y}`}
       onclick={onClickCallback}
     />
+    <!-- Directed helper line (invisible but clickable) -->
+    <path
+      class={`${clickable ? "cursor-pointer" : ""}`}
+      stroke="currentColor"
+      stroke-width="20"
+      stroke-opacity="0"
+      fill="none"
+      pointer-events="stroke"
+      d={`M ${u.x} ${u.y} Q ${curveHandle!.x} ${curveHandle!.y}, ${v.x - 32 * arrowDirUnit!.x} ${v.y - 32 * arrowDirUnit!.y}`}
+      onclick={onClickCallback}
+    />
 
     <!-- Arrowhead at the tip -->
     <path
@@ -84,6 +95,20 @@
       transform={`translate(${v.x},${v.y}) scale(4,4) rotate(${Math.atan2(v.y - curveHandle!.y, v.x - curveHandle!.x) * (180 / Math.PI)},0,0) translate(-9.7,-1.9)`}
     />
   {:else}
+    <!-- Undirected helper line (invisible but clickable) -->
+    <line
+      class={`${clickable ? "cursor-pointer" : ""}`}
+      stroke="currentColor"
+      stroke-width="20"
+      stroke-opacity="0"
+      fill="none"
+      pointer-events="stroke"
+      x1={u.x}
+      y1={u.y}
+      x2={v.x}
+      y2={v.y}
+      onclick={onClickCallback}
+    />
     <!-- Undirected straight edge -->
     <line
       class={edgeStyle}

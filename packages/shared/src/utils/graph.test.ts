@@ -1,9 +1,14 @@
 import { describe, expect, test } from "vitest"
-import Random from "@shared/utils/random"
+import Random, { sampleRandomSeed } from "@shared/utils/random"
 import { Graph, RandomGraph, RootedTree, type Edge } from "./graph.ts"
 
+// TODO: Additional parsing test coverage:
+// - malformed or inconsistent headers (e.g. wrong node/edge counts, non-numeric fields)
+// - graphs with no edges or with isolated nodes
+// - labels containing escaped quotes, spaces, or newline characters
+// - optional / missing / invalid fields (e.g. group, inputFieldID)
 test("parse", () => {
-  const graphStr = '3 3 1 1 1 0 0 6 4\n1 0 3 "A"\n0 1 4 "B"\n1 1 5 "C"\n0 1 1 1\n1 2 2 2\n2 0 3 3\n'
+  const graphStr = '3 3 1 1 1 0 0 0 6 4\n1 0 3 "A"\n0 1 4 "B"\n1 1 5 "C"\n0 1 1 1\n1 2 2 2\n2 0 3 3\n'
   const graph = Graph.parse(graphStr)
 
   expect(graph.getNumNodes()).toEqual(3)
@@ -24,6 +29,16 @@ test("parse", () => {
 
   expect(graph.toString()).toEqual(graphStr)
   expect(graph.isStronglyConnected()).toBeTruthy()
+})
+
+test("parse inputFieldID variants", () => {
+  const base = '3 2 0 0 null 0 0 0 1 1\n0 0 - ""\n1 1 - ""\n2 2 - ""\n0 1 -\n1 2 -\n'
+  const parsedNull = Graph.parse(base)
+  expect(parsedNull.inputFieldID).toBeNull()
+
+  const withId = base.replace("null", "42")
+  const parsedNumeric = Graph.parse(withId)
+  expect(parsedNumeric.inputFieldID).toEqual(42)
 })
 
 describe("graph generation", () => {
@@ -107,4 +122,16 @@ describe("tree traversal", () => {
   test("postorder", () => {
     expect(tree.getTraversalOrder("post")).toEqual(["b", "c", "a"])
   })
+})
+
+describe("Graph parse => toString consistency", () => {
+  const random = new Random(sampleRandomSeed())
+  for (let i = 0; i < 10; i++) {
+    test(`- Iteration ${i}`, () => {
+      const graph = RandomGraph.grid(random, [4, 5], 0.3, "square", "unique", true, false, true)
+      const graphStr = graph.toString()
+      const parsedGraph = Graph.parse(graphStr)
+      expect(parsedGraph.toString()).toEqual(graphStr)
+    })
+  }
 })

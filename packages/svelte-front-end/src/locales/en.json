@@ -119,5 +119,10 @@
   "time": "Time",
   "train.skills.desc": "Gain experience points (XP) through practice! Choose a topic:",
   "your-learning-progress": "Your learning progress",
-  "provideFeedbackCheckFormat": "Here we will provide feedback to the format of your answer."
+  "provideFeedbackCheckFormat": "Here we will provide feedback to the format of your answer.",
+  "save": "Save",
+  "back": "Back",
+  "graphInput": "Graph Input",
+  "nodeSelection": "Node selection:",
+  "edgeSelection": "Edge selection:"
 }

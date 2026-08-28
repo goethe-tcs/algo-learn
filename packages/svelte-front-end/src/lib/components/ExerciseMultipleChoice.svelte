@@ -66,6 +66,19 @@
     questionState.choice = newChoice.sort()
   }
 
+  function toggleChoice(index: number): void {
+    if (disabled) return
+    setChoiceEntry(index, !questionState.choice.includes(index))
+  }
+
+  function handleChoiceKeydown(event: KeyboardEvent, index: number): void {
+    if (disabled) return
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      toggleChoice(index)
+    }
+  }
+
   function handleClick(finished: boolean) {
     if (questionState.mode === "draft") {
       if (question.feedback !== undefined) {
@@ -163,10 +176,18 @@
             checked={questionState.choice.includes(index)}
             {disabled}
             onCheckedChange={() => {
-              setChoiceEntry(index, !questionState.choice.includes(index))
+              toggleChoice(index)
             }}
           />
-          <div class="grid gap-1.5 leading-none">
+          <div
+            class="grid gap-1.5 leading-none"
+            onclick={() => {
+              toggleChoice(index)
+            }}
+            onkeydown={(e) => handleChoiceKeydown(e, index)}
+            role="button"
+            tabindex="0"
+          >
             <Label>
               <Markdown md={answer} />
             </Label>
