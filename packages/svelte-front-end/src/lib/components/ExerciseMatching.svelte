@@ -113,6 +113,7 @@
   footerMode={questionState.mode}
   footerMessage={footerMsg}
   handleFooterClick={handleClick}
+  {disabled}
 >
   <Markdown md={question.text ?? ""} />
 

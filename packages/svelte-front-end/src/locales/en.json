@@ -96,6 +96,7 @@
   "feedback.unknown-variable": "Unknown variable",
   "for": "for",
   "generate-new-exercise-of-same-type": "Generate new exercise of the same type",
+  "regeneration-disabled": "Regeneration disabled",
   "helpButtonText": "This is generic help text.",
   "history-text": "This is a full history of your interaction with this platform. None of this data ever leaves your browser.",
   "home.skill-groups": "Skills",

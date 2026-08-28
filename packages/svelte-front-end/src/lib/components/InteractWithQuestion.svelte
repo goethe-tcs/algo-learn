@@ -12,15 +12,24 @@
     footerMode: MODE
     footerMessage: Snippet<[]>
     handleFooterClick: (finished: boolean) => void
+    disabled: boolean
     children: Snippet
   }
 
-  const { permalink, name, regenerate, footerMode, footerMessage, handleFooterClick, children }: Props =
-    $props()
+  const {
+    permalink,
+    name,
+    regenerate,
+    footerMode,
+    footerMessage,
+    handleFooterClick,
+    disabled,
+    children,
+  }: Props = $props()
 </script>
 
 <CenteredDivs variant="horizontal" className="flex-grow">
-  <QuestionsHeader {permalink} title={name} {regenerate} />
+  <QuestionsHeader {permalink} title={name} {regenerate} {disabled} />
   <div>{@render children?.()}</div>
 </CenteredDivs>
 <QuestionFooter mode={footerMode} message={footerMessage} buttonClick={handleFooterClick} />

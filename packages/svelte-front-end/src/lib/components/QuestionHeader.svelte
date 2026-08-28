@@ -14,9 +14,10 @@
     title?: string
     regenerate?: () => void
     permalink?: string
+    disabled: boolean
   }
 
-  const { title, regenerate, permalink }: Props = $props()
+  const { title, regenerate, permalink, disabled = false }: Props = $props()
   const lang: Language = $derived(getLanguage())
   const { t } = $derived(tFunction([globalTranslations], lang))
   let recentlyCopied: boolean = $state(false)
@@ -51,11 +52,23 @@
   {/if}
   {#if regenerate}
     <Tooltip.Provider>
-      <MyTooltip contentProps={{ sideOffset: 5 }} triggerProps={{ onclick: regenerate }}>
+      <MyTooltip
+        contentProps={{ sideOffset: 5 }}
+        triggerProps={{
+          onclick: disabled ? undefined : regenerate,
+          "aria-disabled": disabled,
+          class: disabled ? "cursor-not-allowed opacity-50" : "",
+        }}
+      >
         {#snippet trigger()}
-          <RefreshCw class="-mb-0.5 pl-1" size={22} strokeWidth={1.5} absoluteStrokeWidth />
+          <RefreshCw
+            class={`-mb-0.5 pl-1 ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+            size={22}
+            strokeWidth={1.5}
+            absoluteStrokeWidth
+          />
         {/snippet}
-        {t("generate-new-exercise-of-same-type")}
+        {disabled ? t("regeneration-disabled") : t("generate-new-exercise-of-same-type")}
       </MyTooltip>
     </Tooltip.Provider>
   {/if}
